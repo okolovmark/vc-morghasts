@@ -6,9 +6,17 @@ Unlocks the Nagash DLC Morghasts and the Dread Abyssal mounts for the whole Vamp
 [list]
 [*][b]Morghast Harbingers[/b] — recruitable from the Haunted Wood chain, tier 4+
 [*][b]Morghast Archai[/b] — recruitable from the Haunted Wood chain, tier 5
+[*]Also available through [b]Raise Dead[/b], priced like Blood Knights: 620 blood (Harbingers) / 660 blood (Archai)
 [*]Building-based unit caps (Tomb Kings style): T4 gives 1 Harbinger, T5 gives 2 Harbingers + 1 Archai; multiple provinces stack
-[*]The ghost-branch technologies grant +1 Harbinger (Legacy of the Tombs) and +1 Archai (Nightmare Spirits)
 [*]Vanilla hire costs, upkeep and stats
+[/list]
+
+[h2]A new 3-tech branch (Black Pyramid buffs)[/h2]
+A new column in the VC military tech tree, priced like the Terrorgheist branch, porting the Morghast buffs from Nagash's Black Pyramid (everything except the gravecall unlocks):
+[list]
+[*][b]Harbingers of the Accursed One[/b]: +1 Harbinger cap; melee defence +7, bonus vs infantry +8, weapon strength +15%, ward save +15%, speed +15%, Vanguard Deployment
+[*][b]Archai of the Great Necromancer[/b]: +1 Archai cap; armour +25, bonus vs large +8, weapon strength +15%, leadership +15, melee attack +10, ward save +10%
+[*][b]Heralds of the End Times[/b]: Perfect Vigour, Heralds of the Accursed One ability, upkeep -25% for all Morghasts
 [/list]
 
 [h2]Dread Abyssal mounts[/h2]
@@ -22,7 +30,6 @@ Unlocks the Nagash DLC Morghasts and the Dread Abyssal mounts for the whole Vamp
 [list]
 [*]Raising the Dead (Black Knights / Blood Knights / Drakenhof Templars lord skill)
 [*]The flying-monsters lord skill (Fell Bats / Vargheists / Terrorgheists / Zombie Dragons, rank 7+)
-[*]Ghost-branch tech buffs: barrier health and battle healing cap — researching the three ghost techs gives Morghasts a barrier of up to 700, exactly like the ghost units (which also start at 0)
 [/list]
 
 [h2]Compatibility[/h2]
