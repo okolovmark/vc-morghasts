@@ -183,6 +183,7 @@ $nodeRows = @(
     @($T2,6,400,$null,15),
     @($T3,5,500,$null,0)
 )
+$UIG = 'vc_morghasts_ui_group'
 $tnode = New-TableHeader $nodeRows.Count 0
 foreach ($r in $nodeRows) {
     $tnode += [byte[]]@(0,0)
@@ -194,12 +195,28 @@ foreach ($r in $nodeRows) {
     $tnode += [BitConverter]::GetBytes([int32]$r[2])
     $tnode += [BitConverter]::GetBytes([int32]0)
     $tnode += [BitConverter]::GetBytes([int32]0)
-    $tnode += [byte[]]@(0)
+    $tnode += [byte[]]@(1); $tnode += New-CaString $UIG
     if ($r[3]) { $tnode += [byte[]]@(1); $tnode += New-CaString $r[3] } else { $tnode += [byte[]]@(0) }
     $tnode += [BitConverter]::GetBytes([int32]0)
-    $tnode += [BitConverter]::GetBytes([int32]200)
+    $tnode += [BitConverter]::GetBytes([int32]0)
     $tnode += [BitConverter]::GetBytes([int32]$r[4])
 }
+
+# own UI group box: technology_ui_groups v6 [key][r][g][b][o bg]
+$tuig = New-TableHeader 1 6
+$tuig += New-CaString $UIG
+$tuig += [BitConverter]::GetBytes([int32]160)
+$tuig += [BitConverter]::GetBytes([int32]32)
+$tuig += [BitConverter]::GetBytes([int32]240)
+$tuig += [byte[]]@(0)
+
+# groups junction v0: [top-right][group][bottom-left][o bottom-right][o top-left]
+$tuigj = New-TableHeader 1 0
+$tuigj += New-CaString $T1
+$tuigj += New-CaString $UIG
+$tuigj += New-CaString $T3
+$tuigj += [byte[]]@(1); $tuigj += New-CaString $T3
+$tuigj += [byte[]]@(1); $tuigj += New-CaString $T1
 
 # technology_node_links v0: [child][i32 0][parent][i32 1][i32 3][i32 0][i32 0][b 1]
 $linkRows = @(@($T2,$T1),@($T3,$T2))
@@ -340,10 +357,45 @@ $locRows = @(
     @("technologies_long_description_$T2", "Clad in armour forged from amethyst magic itself, the Archai are death given form."),
     @("technologies_onscreen_name_$T3", "Heralds of the End Times"),
     @("technologies_short_description_$T3", "The Morghasts proclaim the coming of the end."),
-    @("technologies_long_description_$T3", "Tireless and dreadful, the Morghasts herald the accursed one wherever the dead march.")
+    @("technologies_long_description_$T3", "Tireless and dreadful, the Morghasts herald the accursed one wherever the dead march."),
+    @("technology_ui_groups_optional_display_name_$UIG", "Morghasts"),
+    @("technology_ui_groups_optional_display_desctiption_$UIG", "Ancient constructs of the Great Necromancer")
 )
 $loc = [byte[]]@(0xff,0xfe) + [Text.Encoding]::ASCII.GetBytes('LOC') + [byte[]]@(0) + [BitConverter]::GetBytes([uint32]1) + [BitConverter]::GetBytes([uint32]$locRows.Count)
 foreach ($r in $locRows) { $loc += New-LocString $r[0]; $loc += New-LocString $r[1]; $loc += [byte[]]@(1) }
+
+# ========== 8b. Lua: inject raise-dead pool entries into existing saves ==========
+$lua = @'
+-- vc_morghasts: morghast entries for the VC Raise Dead pool.
+-- Pool state is snapshotted into savegames, so db rows alone only affect
+-- new campaigns; this registers the entries on load for existing saves too.
+-- Entries are keyed (unit, source) and immutable once created, so re-running
+-- is harmless.
+cm:add_first_tick_callback(
+	function()
+		local function setup(faction)
+			if faction:is_null_interface() then return end
+			if faction:subculture() ~= "wh_main_sc_vmp_vampire_counts" then return end
+			pcall(function()
+				cm:add_unit_to_faction_mercenary_pool(
+					faction, "wh3_dlc29_vmp_mon_morghast_harbingers",
+					"wh3_dlc29_vmp_raise_dead_faction",
+					1, 100, 4, 1, "", "", "", true, "vc_morghasts_grp_harbingers")
+			end)
+			pcall(function()
+				cm:add_unit_to_faction_mercenary_pool(
+					faction, "wh3_dlc29_vmp_mon_morghast_archai",
+					"wh3_dlc29_vmp_raise_dead_faction",
+					1, 100, 2, 1, "", "", "", true, "vc_morghasts_grp_archai")
+			end)
+		end
+		local factions = cm:model():world():faction_list()
+		for i = 0, factions:num_items() - 1 do
+			setup(factions:item_at(i))
+		end
+	end
+)
+'@
 
 # ========== 9. assemble pack ==========
 $files = @(
@@ -359,6 +411,9 @@ $files = @(
     @{ Path = "db\technology_nodes_tables\!!!vc_morghasts"; Data = $tnode },
     @{ Path = "db\technology_node_links_tables\!!!vc_morghasts"; Data = $tlink },
     @{ Path = "db\technology_ui_tabs_to_technology_nodes_junctions_tables\!!!vc_morghasts"; Data = $ttab },
+    @{ Path = "db\technology_ui_groups_tables\!!!vc_morghasts"; Data = $tuig },
+    @{ Path = "db\technology_ui_groups_to_technology_nodes_junctions_tables\!!!vc_morghasts"; Data = $tuigj },
+    @{ Path = "script\campaign\mod\vc_morghasts.lua"; Data = [Text.Encoding]::UTF8.GetBytes($lua) },
     @{ Path = "db\mercenary_unit_groups_tables\!!!vc_morghasts"; Data = $mug },
     @{ Path = "db\mercenary_pool_to_groups_junctions_tables\!!!vc_morghasts"; Data = $mpg },
     @{ Path = "db\unit_recruitment_source_overrides_tables\!!!vc_morghasts"; Data = $ov },
