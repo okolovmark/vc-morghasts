@@ -128,12 +128,7 @@ Write-Host "effects cloned: 2"
 # ========== 6. effect_bonus_value_unit_record_junctions (no version): [bonus][effect][unit] ==========
 $capJRows = @(
     @('unit_cap',$EFF_HARB,$HARB),
-    @('unit_cap',$EFF_ARCH,$ARCH),
-    # ghost-tech line buffs extended to morghasts
-    @('battle_barrier_health','wh3_main_effect_barrier_health_cairn_wraith_hexwraith',$HARB),
-    @('battle_barrier_health','wh3_main_effect_barrier_health_cairn_wraith_hexwraith',$ARCH),
-    @('battle_healing_cap_mod','wh3_main_effect_healing_cap_wraiths',$HARB),
-    @('battle_healing_cap_mod','wh3_main_effect_healing_cap_wraiths',$ARCH)
+    @('unit_cap',$EFF_ARCH,$ARCH)
 )
 $capj = New-TableHeader $capJRows.Count 0
 foreach ($r in $capJRows) { $capj += New-CaString $r[0]; $capj += New-CaString $r[1]; $capj += New-CaString $r[2] }
@@ -159,17 +154,102 @@ foreach ($r in $beRows) {
     $be += New-CaString ''
 }
 
-# ========== 7b. technology_effects_junction (no version): [tech][effect][scope][f32] ==========
+# ========== 7b. three custom technologies (Nagash pyramid buffs, minus gravecall) ==========
+$T1 = 'vc_morghasts_tech_1'  # Harbingers
+$T2 = 'vc_morghasts_tech_2'  # Archai
+$T3 = 'vc_morghasts_tech_3'  # shared
+
+# technologies v7: [key][building_level][i32 pos][icon][b][b][info_pic][i32 unique][b civil][b eng][b mil][b hidden]
+$techRows = @(
+    @($T1,'wh3_main_tech_vmp_units_terrorgheist_1',913370001),
+    @($T2,'wh3_main_tech_vmp_units_terrorgheist_3',913370002),
+    @($T3,'wh_main_vmp_fuelled_by_fear',913370003)
+)
+$tech = New-TableHeader $techRows.Count 7
+foreach ($r in $techRows) {
+    $tech += New-CaString $r[0]
+    $tech += New-CaString 'wh_main_chs_port_ruin'
+    $tech += [BitConverter]::GetBytes([int32]1)
+    $tech += New-CaString $r[1]
+    $tech += [byte[]]@(0,0)
+    $tech += New-CaString '"placeholder.tga"'
+    $tech += [BitConverter]::GetBytes([int32]$r[2])
+    $tech += [byte[]]@(0,0,1,0)
+}
+
+# technology_nodes v0: [o camp][o fac][i32 indent][key][tech][node_set][i32 tier][i32 pts][i32 cpr][i32 food][o uig][o rcost][i32 reqpar][i32 px][i32 py]
+$nodeRows = @(
+    @($T1,7,100,'wh3_main_vmp_unit_tech_cost_600',30),
+    @($T2,6,400,$null,15),
+    @($T3,5,500,$null,0)
+)
+$tnode = New-TableHeader $nodeRows.Count 0
+foreach ($r in $nodeRows) {
+    $tnode += [byte[]]@(0,0)
+    $tnode += [BitConverter]::GetBytes([int32]$r[1])
+    $tnode += New-CaString $r[0]
+    $tnode += New-CaString $r[0]
+    $tnode += New-CaString 'vmp_mil'
+    $tnode += [BitConverter]::GetBytes([int32]39)
+    $tnode += [BitConverter]::GetBytes([int32]$r[2])
+    $tnode += [BitConverter]::GetBytes([int32]0)
+    $tnode += [BitConverter]::GetBytes([int32]0)
+    $tnode += [byte[]]@(0)
+    if ($r[3]) { $tnode += [byte[]]@(1); $tnode += New-CaString $r[3] } else { $tnode += [byte[]]@(0) }
+    $tnode += [BitConverter]::GetBytes([int32]0)
+    $tnode += [BitConverter]::GetBytes([int32]200)
+    $tnode += [BitConverter]::GetBytes([int32]$r[4])
+}
+
+# technology_node_links v0: [child][i32 0][parent][i32 1][i32 3][i32 0][i32 0][b 1]
+$linkRows = @(@($T2,$T1),@($T3,$T2))
+$tlink = New-TableHeader $linkRows.Count 0
+foreach ($r in $linkRows) {
+    $tlink += New-CaString $r[0]
+    $tlink += [BitConverter]::GetBytes([int32]0)
+    $tlink += New-CaString $r[1]
+    $tlink += [BitConverter]::GetBytes([int32]1)
+    $tlink += [BitConverter]::GetBytes([int32]3)
+    $tlink += [BitConverter]::GetBytes([int32]0)
+    $tlink += [BitConverter]::GetBytes([int32]0)
+    $tlink += [byte[]]@(1)
+}
+
+# technology_ui_tabs_to_technology_nodes_junctions v0: [node][tab]
+$ttab = New-TableHeader 3 0
+foreach ($t in @($T1,$T2,$T3)) { $ttab += New-CaString $t; $ttab += New-CaString 'vmp_units' }
+
+# technology_effects_junction (no version): [tech][effect][scope][f32]
+$FFO = 'faction_to_force_own'
+$FFU = 'faction_to_faction_own_unseen'
 $teRows = @(
-    @('wh3_main_tech_vmp_units_ghosts_2', $EFF_HARB, 1.0),
-    @('wh3_main_tech_vmp_units_ghosts_3', $EFF_ARCH, 1.0)
+    # T1 - Harbingers (pyramid values)
+    @($T1,'wh3_dlc29_effect_force_stat_melee_defence_morghast_harbingers',$FFO,7.0),
+    @($T1,'wh3_dlc29_effect_force_stat_bonus_vs_infantry_morghast_harbingers',$FFO,8.0),
+    @($T1,'wh3_dlc29_effect_force_stat_weapon_strength_morghast_harbinger',$FFO,15.0),
+    @($T1,'wh3_dlc29_effect_force_stat_ward_save_morghast_harbinger',$FFO,15.0),
+    @($T1,'wh3_dlc29_effect_attribute_vanguard_deploy_morghast_harbingers',$FFO,1.0),
+    @($T1,'wh3_dlc29_effect_force_stat_speed_morghast_harbingers',$FFO,15.0),
+    @($T1,$EFF_HARB,$FFU,1.0),
+    # T2 - Archai
+    @($T2,'wh3_dlc29_effect_force_stat_armour_morghast_archai',$FFO,25.0),
+    @($T2,'wh3_dlc29_effect_force_stat_bonus_vs_large_morghast_archai',$FFO,8.0),
+    @($T2,'wh3_dlc29_effect_force_stat_weapon_strength_morghast_archai',$FFO,15.0),
+    @($T2,'wh3_dlc29_effect_force_stat_leadership_morghast_archai',$FFO,15.0),
+    @($T2,'wh3_dlc29_effect_force_stat_melee_attack_morghast_archai',$FFO,10.0),
+    @($T2,'wh3_dlc29_effect_force_stat_ward_save_morghast_archai',$FFO,10.0),
+    @($T2,$EFF_ARCH,$FFU,1.0),
+    # T3 - shared
+    @($T3,'wh3_dlc29_effect_force_attribute_enable_perfect_vigour_morghast',$FFO,1.0),
+    @($T3,'wh3_dlc29_effect_ability_enable_heralds_of_the_accursed_one_morghast',$FFO,1.0),
+    @($T3,'wh3_dlc29_effect_force_upkeep_morghasts',$FFO,-25.0)
 )
 $te = New-TableHeader $teRows.Count 0
 foreach ($r in $teRows) {
     $te += New-CaString $r[0]
     $te += New-CaString $r[1]
-    $te += New-CaString 'faction_to_faction_own_unseen'
-    $te += [BitConverter]::GetBytes([single]$r[2])
+    $te += New-CaString $r[2]
+    $te += [BitConverter]::GetBytes([single]$r[3])
 }
 
 # ========== 7c. Raise Dead (gravecall) pool entries ==========
@@ -230,11 +310,10 @@ foreach ($k in @($HARB,$ARCH)) {
 }
 
 # resource_cost_pooled_resource_junctions v1: [i32 amount][s resource][s cost key][s absolute][s default]
+# elite units cost blood (vmp_power); priced like Blood Knights (620/660)
 $rcjRows = @(
-    @(-1400,'wh3_dlc29_vmp_corpses_recruitment',$HARB),
-    @(-450, 'wh3_dlc29_vmp_power_recruitment',  $HARB),
-    @(-1500,'wh3_dlc29_vmp_corpses_recruitment',$ARCH),
-    @(-550, 'wh3_dlc29_vmp_power_recruitment',  $ARCH)
+    @(-620, 'wh3_dlc29_vmp_power_recruitment',  $HARB),
+    @(-660, 'wh3_dlc29_vmp_power_recruitment',  $ARCH)
 )
 $rcj = New-TableHeader $rcjRows.Count 1
 foreach ($r in $rcjRows) {
@@ -252,7 +331,16 @@ function New-LocString([string]$s) {
 }
 $locRows = @(
     @("effects_description_$EFF_HARB", "Unit capacity: %+n`nMorghast Harbingers"),
-    @("effects_description_$EFF_ARCH", "Unit capacity: %+n`nMorghast Archai")
+    @("effects_description_$EFF_ARCH", "Unit capacity: %+n`nMorghast Archai"),
+    @("technologies_onscreen_name_$T1", "Harbingers of the Accursed One"),
+    @("technologies_short_description_$T1", "The Morghast Harbingers descend upon the Old World once more."),
+    @("technologies_long_description_$T1", "In the Realm of Souls they were heralds of the Great Necromancer; now their blades serve the vampire courts."),
+    @("technologies_onscreen_name_$T2", "Archai of the Great Necromancer"),
+    @("technologies_short_description_$T2", "None shall withstand the might of the Archai."),
+    @("technologies_long_description_$T2", "Clad in armour forged from amethyst magic itself, the Archai are death given form."),
+    @("technologies_onscreen_name_$T3", "Heralds of the End Times"),
+    @("technologies_short_description_$T3", "The Morghasts proclaim the coming of the end."),
+    @("technologies_long_description_$T3", "Tireless and dreadful, the Morghasts herald the accursed one wherever the dead march.")
 )
 $loc = [byte[]]@(0xff,0xfe) + [Text.Encoding]::ASCII.GetBytes('LOC') + [byte[]]@(0) + [BitConverter]::GetBytes([uint32]1) + [BitConverter]::GetBytes([uint32]$locRows.Count)
 foreach ($r in $locRows) { $loc += New-LocString $r[0]; $loc += New-LocString $r[1]; $loc += [byte[]]@(1) }
@@ -267,6 +355,10 @@ $files = @(
     @{ Path = "db\effect_bonus_value_unit_record_junctions_tables\!!!vc_morghasts"; Data = $capj },
     @{ Path = "db\building_effects_junction_tables\!!!vc_morghasts"; Data = $be },
     @{ Path = "db\technology_effects_junction_tables\!!!vc_morghasts"; Data = $te },
+    @{ Path = "db\technologies_tables\!!!vc_morghasts"; Data = $tech },
+    @{ Path = "db\technology_nodes_tables\!!!vc_morghasts"; Data = $tnode },
+    @{ Path = "db\technology_node_links_tables\!!!vc_morghasts"; Data = $tlink },
+    @{ Path = "db\technology_ui_tabs_to_technology_nodes_junctions_tables\!!!vc_morghasts"; Data = $ttab },
     @{ Path = "db\mercenary_unit_groups_tables\!!!vc_morghasts"; Data = $mug },
     @{ Path = "db\mercenary_pool_to_groups_junctions_tables\!!!vc_morghasts"; Data = $mpg },
     @{ Path = "db\unit_recruitment_source_overrides_tables\!!!vc_morghasts"; Data = $ov },

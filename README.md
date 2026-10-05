@@ -11,19 +11,27 @@ exclusive to the Nagash (Undead Legions) campaign.
   Counts faction
 * Recruitment from the **Haunted Wood** building chain (where Vargheists and
   Terrorgheists live): Harbingers from tier 4, Archai from tier 5
+* Recruitable through **Raise Dead** (gravecall) as elite units priced like
+  Blood Knights: 620 blood for Harbingers, 660 for Archai
 * Building-based unit caps, Tomb Kings style:
   * Haunted Wood T4: 1 Harbinger
   * Haunted Wood T5: 2 Harbingers + 1 Archai
-  * Tech *Legacy of the Tombs* (ghosts branch): +1 Harbinger
-  * Tech *Nightmare Spirits* (ghosts branch): +1 Archai
+* **A new 3-tech branch** in the VC military tech tree (next to the ghost
+  column, priced like the Terrorgheist branch) that ports the Morghast buffs
+  from Nagash's Black Pyramid — everything except the gravecall unlocks:
+  * *Harbingers of the Accursed One*: +1 Harbinger cap; Harbingers get
+    melee defence +7, bonus vs infantry +8, weapon strength +15%,
+    ward save +15%, speed +15%, Vanguard Deployment
+  * *Archai of the Great Necromancer*: +1 Archai cap; Archai get
+    armour +25, bonus vs large +8, weapon strength +15%, leadership +15,
+    melee attack +10, ward save +10%
+  * *Heralds of the End Times*: Perfect Vigour, the Heralds of the
+    Accursed One ability, upkeep −25% for all Morghasts
 * Morghasts are added to the buff lists of the VC roster skills:
   * *Raising the Dead* (Black Knights / Blood Knights / Drakenhof Templars
     red-line skill)
   * the flying-monsters red-line skill (Fell Bats / Vargheists /
     Terrorgheists / Zombie Dragons, rank 7+)
-  * the ghost tech branch unit buffs — barrier health and battle healing
-    cap. Like the ghost units themselves, Morghasts have 0 base barrier:
-    the researched techs grant it (+200/+200/+300, up to 700)
 * **Ashigaroth, Devourer of the Craven** for Mannfred and the Dread Abyssal
   mount for Neferata: the mount skill nodes already exist in their skill
   trees but are gated to the Nagash campaign subculture — the gate is
