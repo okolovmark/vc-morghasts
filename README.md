@@ -21,7 +21,9 @@ exclusive to the Nagash (Undead Legions) campaign.
     red-line skill)
   * the flying-monsters red-line skill (Fell Bats / Vargheists /
     Terrorgheists / Zombie Dragons, rank 7+)
-  * the ghost tech branch unit buffs (barrier health, battle healing cap)
+  * the ghost tech branch unit buffs — barrier health and battle healing
+    cap. Like the ghost units themselves, Morghasts have 0 base barrier:
+    the researched techs grant it (+200/+200/+300, up to 700)
 * **Ashigaroth, Devourer of the Craven** for Mannfred and the Dread Abyssal
   mount for Neferata: the mount skill nodes already exist in their skill
   trees but are gated to the Nagash campaign subculture — the gate is
@@ -71,8 +73,6 @@ Requires the game installed (tables are read from `data/db.pack`) and any
 
 * The cap-effect tooltip line ("Unit capacity: +N") is English-only — mod
   `.loc` files apply to all game languages.
-* The ghost-tech *barrier health* buff is listed for Morghasts but has no
-  battle effect on them (they have no barrier); the healing-cap buff works.
 * In the Nagash campaign Morghast recruitment may additionally show a
   "x/30" unit-cap badge next to the ritual capacity — cosmetic.
 
