@@ -1,0 +1,43 @@
+[h1]Morghasts & Dread Abyssals for Vampire Counts[/h1]
+
+Unlocks the Nagash DLC Morghasts and the Dread Abyssal mounts for the whole Vampire Counts race — no need to play the Nagash campaign to field them.
+
+[h2]Morghasts for every Vampire Counts faction[/h2]
+[list]
+[*][b]Morghast Harbingers[/b] — recruitable from the Haunted Wood chain, tier 4+
+[*][b]Morghast Archai[/b] — recruitable from the Haunted Wood chain, tier 5
+[*]Building-based unit caps (Tomb Kings style): T4 gives 1 Harbinger, T5 gives 2 Harbingers + 1 Archai; multiple provinces stack
+[*]The ghost-branch technologies grant +1 Harbinger (Legacy of the Tombs) and +1 Archai (Nightmare Spirits)
+[*]Vanilla hire costs, upkeep and stats
+[/list]
+
+[h2]Dread Abyssal mounts[/h2]
+[list]
+[*][b]Mannfred[/b] gets Ashigaroth, Devourer of the Craven in every campaign
+[*][b]Neferata[/b] gets her Dread Abyssal in every campaign
+[*]The mount skill nodes are CA's own — the mod only removes the "Nagash campaign only" gate; level requirements stay vanilla
+[/list]
+
+[h2]Skill & tech buffs extended to Morghasts[/h2]
+[list]
+[*]Raising the Dead (Black Knights / Blood Knights / Drakenhof Templars lord skill)
+[*]The flying-monsters lord skill (Fell Bats / Vargheists / Terrorgheists / Zombie Dragons, rank 7+)
+[*]Ghost-branch tech buffs (battle healing cap; barrier line is listed but Morghasts have no barrier)
+[/list]
+
+[h2]Compatibility[/h2]
+[list]
+[*]Requires the Nagash DLC to see the units
+[*]Save-game compatible: add or remove at any time
+[*]Immortal Empires and all campaigns; the Nagash campaign itself is unaffected
+[*]The cap tooltip line is English-only in all game languages
+[/list]
+
+[h2]Bug reports & source code[/h2]
+Found an issue? Please open an issue on GitHub:
+[url=https://github.com/okolovmark/vc-morghasts/issues]github.com/okolovmark/vc-morghasts/issues[/url]
+
+Full source code and the PowerShell build toolchain (no Assembly Kit / RPFM — the mod is generated from the game's own db):
+[url=https://github.com/okolovmark/vc-morghasts]github.com/okolovmark/vc-morghasts[/url]
+
+See also: [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3789976964]Unlimited Mercenaries (Player Only)[/url] — the sibling mod built with the same toolchain.
