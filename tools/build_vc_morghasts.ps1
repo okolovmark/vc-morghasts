@@ -404,12 +404,12 @@ cm:add_first_tick_callback(
 			pcall(function()
 				cm:add_unit_to_faction_mercenary_pool(
 					faction, HARB, SRC,
-					10, 100, 999999, 2, "", "", "", true, "vc_morghasts_grp_harbingers")
+					10, 100, 30, 2, "", "", "", true, "vc_morghasts_grp_harbingers")
 			end)
 			pcall(function()
 				cm:add_unit_to_faction_mercenary_pool(
 					faction, ARCH, SRC,
-					10, 100, 999999, 2, "", "", "", true, "vc_morghasts_grp_archai")
+					10, 100, 30, 2, "", "", "", true, "vc_morghasts_grp_archai")
 			end)
 		end
 		local factions = cm:model():world():faction_list()
