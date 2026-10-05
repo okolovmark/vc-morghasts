@@ -290,10 +290,11 @@ foreach ($r in $teRows) {
 $RD_POOL = 'wh3_dlc29_vmp_raise_dead_faction'
 $VC_SUB = 'wh_main_sc_vmp_vampire_counts'
 
-# mercenary_unit_groups v3: [f32 1.0][s group][i32 999999][s unit][i32 0xC8000000][i32 id][o absent]
+# mercenary_unit_groups v3:
+# [chance f32][key][max_count i32][unit][partial b][max_replenish f32][sort i32]
 $grpRows = @(
-    @('vc_morghasts_grp_harbingers',$HARB,59001),
-    @('vc_morghasts_grp_archai',$ARCH,59002)
+    @('vc_morghasts_grp_harbingers',$HARB,8),
+    @('vc_morghasts_grp_archai',$ARCH,9)
 )
 $mug = New-TableHeader $grpRows.Count 3
 foreach ($r in $grpRows) {
@@ -301,9 +302,9 @@ foreach ($r in $grpRows) {
     $mug += New-CaString $r[0]
     $mug += [BitConverter]::GetBytes([int32]999999)
     $mug += New-CaString $r[1]
-    $mug += [BitConverter]::GetBytes([int32]-939524096)
-    $mug += [BitConverter]::GetBytes([int32]$r[2])
     $mug += [byte[]]@(0)
+    $mug += [BitConverter]::GetBytes([single]100.0)
+    $mug += [BitConverter]::GetBytes([int32]$r[2])
 }
 
 # mercenary_pool_to_groups_junctions v3: [s group][i32 999999][i32 id][s pool][o][o sub][o]
