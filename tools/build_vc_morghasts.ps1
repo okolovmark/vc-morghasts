@@ -125,29 +125,30 @@ $eff = New-TableHeader 2 0
 foreach ($r in $effRows) { $eff += $r }
 Write-Host "effects cloned: 2"
 
-# ========== 6. effect_bonus_value_unit_record_junctions (no version): [bonus][effect][unit] ==========
-$capJRows = @(
-    @('unit_cap',$EFF_HARB,$HARB),
-    @('unit_cap',$EFF_ARCH,$ARCH)
-)
-$capj = New-TableHeader $capJRows.Count 0
-foreach ($r in $capJRows) { $capj += New-CaString $r[0]; $capj += New-CaString $r[1]; $capj += New-CaString $r[2] }
+# ========== 6. VC unit caps = the ALLOWANCE system (owned-across-all-armies limit) ==========
+# unit_allowances v1: [i32 base][s unit_list][o campaign_group]
+$ua = New-TableHeader 2 1
+foreach ($lst in @($HARB,$ARCH)) {
+    $ua += [BitConverter]::GetBytes([int32]0)
+    $ua += New-CaString $lst   # CA unit lists are keyed like the units
+    $ua += [byte[]]@(1); $ua += New-CaString 'vampire_counts'
+}
+# effect_bonus_value_unit_list_junctions v0: [s unit_list][s effect][s bonus]
+$capj = New-TableHeader 2 0
+$capj += New-CaString $HARB; $capj += New-CaString $EFF_HARB; $capj += New-CaString 'unit_allowance_point_cap_mod'
+$capj += New-CaString $ARCH; $capj += New-CaString $EFF_ARCH; $capj += New-CaString 'unit_allowance_point_cap_mod'
 
 # ========== 7. building_effects_junction (no version): [bld][eff][scope][f32][f32][i32 0][s ""] ==========
 $beRows = @(
     @('wh_main_vmp_forest_4', $EFF_HARB, 1.0),
     @('wh_main_vmp_forest_5', $EFF_HARB, 2.0),
-    @('wh_main_vmp_forest_5', $EFF_ARCH, 1.0),
-    @('wh3_dlc29_nag_necropolis_military_monsters_4', $EFF_HARB, 30.0),
-    @('wh3_dlc29_nag_necropolis_military_monsters_4', $EFF_ARCH, 30.0),
-    @('wh3_dlc29_nag_necropolis_military_monsters_5', $EFF_HARB, 30.0),
-    @('wh3_dlc29_nag_necropolis_military_monsters_5', $EFF_ARCH, 30.0)
+    @('wh_main_vmp_forest_5', $EFF_ARCH, 1.0)
 )
 $be = New-TableHeader $beRows.Count 0
 foreach ($r in $beRows) {
     $be += New-CaString $r[0]
     $be += New-CaString $r[1]
-    $be += New-CaString 'building_to_faction_own'
+    $be += New-CaString 'faction_to_faction_own_unseen'
     $be += [BitConverter]::GetBytes([single]$r[2])
     $be += [BitConverter]::GetBytes([single]$r[2])
     $be += [BitConverter]::GetBytes([int32]0)
@@ -191,14 +192,14 @@ foreach ($r in $nodeRows) {
     $tnode += New-CaString $r[0]
     $tnode += New-CaString $r[0]
     $tnode += New-CaString 'vmp_mil'
-    $tnode += [BitConverter]::GetBytes([int32]39)
+    $tnode += [BitConverter]::GetBytes([int32]46)
     $tnode += [BitConverter]::GetBytes([int32]$r[2])
     $tnode += [BitConverter]::GetBytes([int32]0)
     $tnode += [BitConverter]::GetBytes([int32]0)
     $tnode += [byte[]]@(1); $tnode += New-CaString $UIG
     if ($r[3]) { $tnode += [byte[]]@(1); $tnode += New-CaString $r[3] } else { $tnode += [byte[]]@(0) }
     $tnode += [BitConverter]::GetBytes([int32]0)
-    $tnode += [BitConverter]::GetBytes([int32]0)
+    $tnode += [BitConverter]::GetBytes([int32]120)
     $tnode += [BitConverter]::GetBytes([int32]$r[4])
 }
 
@@ -371,22 +372,28 @@ $lua = @'
 -- new campaigns; this registers the entries on load for existing saves too.
 -- Entries are keyed (unit, source) and immutable once created, so re-running
 -- is harmless.
+local HARB = "wh3_dlc29_vmp_mon_morghast_harbingers"
+local ARCH = "wh3_dlc29_vmp_mon_morghast_archai"
+local SRC = "wh3_dlc29_vmp_raise_dead_faction"
+
 cm:add_first_tick_callback(
 	function()
+		-- Stock is kept effectively unlimited; the real limit is the
+		-- unit-allowance cap (owned across all armies), granted by the
+		-- Haunted Wood buildings and the mod's technologies — the same
+		-- mechanic every other VC unit uses.
 		local function setup(faction)
 			if faction:is_null_interface() then return end
 			if faction:subculture() ~= "wh_main_sc_vmp_vampire_counts" then return end
 			pcall(function()
 				cm:add_unit_to_faction_mercenary_pool(
-					faction, "wh3_dlc29_vmp_mon_morghast_harbingers",
-					"wh3_dlc29_vmp_raise_dead_faction",
-					1, 100, 4, 1, "", "", "", true, "vc_morghasts_grp_harbingers")
+					faction, HARB, SRC,
+					10, 100, 999999, 2, "", "", "", true, "vc_morghasts_grp_harbingers")
 			end)
 			pcall(function()
 				cm:add_unit_to_faction_mercenary_pool(
-					faction, "wh3_dlc29_vmp_mon_morghast_archai",
-					"wh3_dlc29_vmp_raise_dead_faction",
-					1, 100, 2, 1, "", "", "", true, "vc_morghasts_grp_archai")
+					faction, ARCH, SRC,
+					10, 100, 999999, 2, "", "", "", true, "vc_morghasts_grp_archai")
 			end)
 		end
 		local factions = cm:model():world():faction_list()
@@ -404,7 +411,8 @@ $files = @(
     @{ Path = "db\character_skill_nodes_tables\!!!vc_morghasts"; Data = $nodes },
     @{ Path = "db\unit_set_to_unit_junctions_tables\!!!vc_morghasts"; Data = $setj },
     @{ Path = "db\effects_tables\!!!vc_morghasts"; Data = $eff },
-    @{ Path = "db\effect_bonus_value_unit_record_junctions_tables\!!!vc_morghasts"; Data = $capj },
+    @{ Path = "db\effect_bonus_value_unit_list_junctions_tables\!!!vc_morghasts"; Data = $capj },
+    @{ Path = "db\unit_allowances_tables\!!!vc_morghasts"; Data = $ua },
     @{ Path = "db\building_effects_junction_tables\!!!vc_morghasts"; Data = $be },
     @{ Path = "db\technology_effects_junction_tables\!!!vc_morghasts"; Data = $te },
     @{ Path = "db\technologies_tables\!!!vc_morghasts"; Data = $tech },
