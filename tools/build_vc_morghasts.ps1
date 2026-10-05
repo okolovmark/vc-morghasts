@@ -172,6 +172,79 @@ foreach ($r in $teRows) {
     $te += [BitConverter]::GetBytes([single]$r[2])
 }
 
+# ========== 7c. Raise Dead (gravecall) pool entries ==========
+$RD_POOL = 'wh3_dlc29_vmp_raise_dead_faction'
+$VC_SUB = 'wh_main_sc_vmp_vampire_counts'
+
+# mercenary_unit_groups v3: [f32 1.0][s group][i32 999999][s unit][i32 0xC8000000][i32 id][o absent]
+$grpRows = @(
+    @('vc_morghasts_grp_harbingers',$HARB,59001),
+    @('vc_morghasts_grp_archai',$ARCH,59002)
+)
+$mug = New-TableHeader $grpRows.Count 3
+foreach ($r in $grpRows) {
+    $mug += [BitConverter]::GetBytes([single]1.0)
+    $mug += New-CaString $r[0]
+    $mug += [BitConverter]::GetBytes([int32]999999)
+    $mug += New-CaString $r[1]
+    $mug += [BitConverter]::GetBytes([int32]-939524096)
+    $mug += [BitConverter]::GetBytes([int32]$r[2])
+    $mug += [byte[]]@(0)
+}
+
+# mercenary_pool_to_groups_junctions v3: [s group][i32 999999][i32 id][s pool][o][o sub][o]
+$pgRows = @(
+    @('vc_morghasts_grp_harbingers',59003),
+    @('vc_morghasts_grp_archai',59004)
+)
+$mpg = New-TableHeader $pgRows.Count 3
+foreach ($r in $pgRows) {
+    $mpg += New-CaString $r[0]
+    $mpg += [BitConverter]::GetBytes([int32]999999)
+    $mpg += [BitConverter]::GetBytes([int32]$r[1])
+    $mpg += New-CaString $RD_POOL
+    $mpg += [byte[]]@(0)
+    $mpg += [byte[]]@(1); $mpg += New-CaString $VC_SUB
+    $mpg += [byte[]]@(0)
+}
+
+# unit_recruitment_source_overrides (no version): [b 1][s cost][s unit][s pool]
+$ovRows = @(@($HARB),@($ARCH))
+$ov = New-TableHeader $ovRows.Count 0
+foreach ($r in $ovRows) {
+    $ov += [byte[]]@(1)
+    $ov += New-CaString $r[0]
+    $ov += New-CaString $r[0]
+    $ov += New-CaString $RD_POOL
+}
+
+# resource_costs (no version): [s key][i32 0][RECRUITMENT][CANCELLED_RECRUITMENT][ARMY_UPKEEP][BACKGROUND_INCOME]
+$rc = New-TableHeader 2 0
+foreach ($k in @($HARB,$ARCH)) {
+    $rc += New-CaString $k
+    $rc += [BitConverter]::GetBytes([int32]0)
+    $rc += New-CaString 'RECRUITMENT'
+    $rc += New-CaString 'CANCELLED_RECRUITMENT'
+    $rc += New-CaString 'ARMY_UPKEEP'
+    $rc += New-CaString 'BACKGROUND_INCOME'
+}
+
+# resource_cost_pooled_resource_junctions v1: [i32 amount][s resource][s cost key][s absolute][s default]
+$rcjRows = @(
+    @(-1400,'wh3_dlc29_vmp_corpses_recruitment',$HARB),
+    @(-450, 'wh3_dlc29_vmp_power_recruitment',  $HARB),
+    @(-1500,'wh3_dlc29_vmp_corpses_recruitment',$ARCH),
+    @(-550, 'wh3_dlc29_vmp_power_recruitment',  $ARCH)
+)
+$rcj = New-TableHeader $rcjRows.Count 1
+foreach ($r in $rcjRows) {
+    $rcj += [BitConverter]::GetBytes([int32]$r[0])
+    $rcj += New-CaString $r[1]
+    $rcj += New-CaString $r[2]
+    $rcj += New-CaString 'absolute'
+    $rcj += New-CaString 'default'
+}
+
 # ========== 8. loc file ==========
 function New-LocString([string]$s) {
     $chars = $s.ToCharArray()
@@ -194,6 +267,11 @@ $files = @(
     @{ Path = "db\effect_bonus_value_unit_record_junctions_tables\!!!vc_morghasts"; Data = $capj },
     @{ Path = "db\building_effects_junction_tables\!!!vc_morghasts"; Data = $be },
     @{ Path = "db\technology_effects_junction_tables\!!!vc_morghasts"; Data = $te },
+    @{ Path = "db\mercenary_unit_groups_tables\!!!vc_morghasts"; Data = $mug },
+    @{ Path = "db\mercenary_pool_to_groups_junctions_tables\!!!vc_morghasts"; Data = $mpg },
+    @{ Path = "db\unit_recruitment_source_overrides_tables\!!!vc_morghasts"; Data = $ov },
+    @{ Path = "db\resource_costs_tables\!!!vc_morghasts"; Data = $rc },
+    @{ Path = "db\resource_cost_pooled_resource_junctions_tables\!!!vc_morghasts"; Data = $rcj },
     @{ Path = "text\db\!!!vc_morghasts.loc"; Data = $loc }
 )
 $previewPath = "C:\Users\okolo\Downloads\vc-morghasts\preview.png"
