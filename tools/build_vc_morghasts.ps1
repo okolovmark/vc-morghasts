@@ -149,10 +149,10 @@ foreach ($lst in @($LIST_HARB,$LIST_ARCH)) {
     $ua += New-CaString $lst
     $ua += [byte[]]@(1); $ua += New-CaString 'vampire_counts'
 }
-# effect_bonus_value_unit_list_junctions v0: [s unit_list][s effect][s bonus]
+# effect_bonus_value_unit_list_junctions v0: [s bonus_value_id][s unit_list][s effect]
 $capj = New-TableHeader 2 0
-$capj += New-CaString $LIST_HARB; $capj += New-CaString $EFF_HARB; $capj += New-CaString 'unit_allowance_point_cap_mod'
-$capj += New-CaString $LIST_ARCH; $capj += New-CaString $EFF_ARCH; $capj += New-CaString 'unit_allowance_point_cap_mod'
+$capj += New-CaString 'unit_allowance_point_cap_mod'; $capj += New-CaString $LIST_HARB; $capj += New-CaString $EFF_HARB
+$capj += New-CaString 'unit_allowance_point_cap_mod'; $capj += New-CaString $LIST_ARCH; $capj += New-CaString $EFF_ARCH
 
 # ========== 7. building_effects_junction (no version): [bld][eff][scope][f32][f32][i32 0][s ""] ==========
 $beRows = @(
