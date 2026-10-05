@@ -126,17 +126,33 @@ foreach ($r in $effRows) { $eff += $r }
 Write-Host "effects cloned: 2"
 
 # ========== 6. VC unit caps = the ALLOWANCE system (owned-across-all-armies limit) ==========
+# own cap unit-lists (CA pattern: dedicated wh3_unit_cap_* lists), because
+# (list, bonus) must be unique in effect_bonus_value_unit_list_junctions and
+# the units' own lists are already bound by the Nagash capacity effects
+$LIST_HARB = 'vc_morghasts_cap_harbingers'
+$LIST_ARCH = 'vc_morghasts_cap_archai'
+
+# unit_lists v0: [s key]
+$ul = New-TableHeader 2 0
+$ul += New-CaString $LIST_ARCH
+$ul += New-CaString $LIST_HARB
+
+# unit_to_unit_list_junctions v0: [s unit][s list]
+$ulj = New-TableHeader 2 0
+$ulj += New-CaString $HARB; $ulj += New-CaString $LIST_HARB
+$ulj += New-CaString $ARCH; $ulj += New-CaString $LIST_ARCH
+
 # unit_allowances v1: [i32 base][s unit_list][o campaign_group]
 $ua = New-TableHeader 2 1
-foreach ($lst in @($HARB,$ARCH)) {
+foreach ($lst in @($LIST_HARB,$LIST_ARCH)) {
     $ua += [BitConverter]::GetBytes([int32]0)
-    $ua += New-CaString $lst   # CA unit lists are keyed like the units
+    $ua += New-CaString $lst
     $ua += [byte[]]@(1); $ua += New-CaString 'vampire_counts'
 }
 # effect_bonus_value_unit_list_junctions v0: [s unit_list][s effect][s bonus]
 $capj = New-TableHeader 2 0
-$capj += New-CaString $HARB; $capj += New-CaString $EFF_HARB; $capj += New-CaString 'unit_allowance_point_cap_mod'
-$capj += New-CaString $ARCH; $capj += New-CaString $EFF_ARCH; $capj += New-CaString 'unit_allowance_point_cap_mod'
+$capj += New-CaString $LIST_HARB; $capj += New-CaString $EFF_HARB; $capj += New-CaString 'unit_allowance_point_cap_mod'
+$capj += New-CaString $LIST_ARCH; $capj += New-CaString $EFF_ARCH; $capj += New-CaString 'unit_allowance_point_cap_mod'
 
 # ========== 7. building_effects_junction (no version): [bld][eff][scope][f32][f32][i32 0][s ""] ==========
 $beRows = @(
@@ -413,6 +429,8 @@ $files = @(
     @{ Path = "db\effects_tables\!!!vc_morghasts"; Data = $eff },
     @{ Path = "db\effect_bonus_value_unit_list_junctions_tables\!!!vc_morghasts"; Data = $capj },
     @{ Path = "db\unit_allowances_tables\!!!vc_morghasts"; Data = $ua },
+    @{ Path = "db\unit_lists_tables\!!!vc_morghasts"; Data = $ul },
+    @{ Path = "db\unit_to_unit_list_junctions_tables\!!!vc_morghasts"; Data = $ulj },
     @{ Path = "db\building_effects_junction_tables\!!!vc_morghasts"; Data = $be },
     @{ Path = "db\technology_effects_junction_tables\!!!vc_morghasts"; Data = $te },
     @{ Path = "db\technologies_tables\!!!vc_morghasts"; Data = $tech },
