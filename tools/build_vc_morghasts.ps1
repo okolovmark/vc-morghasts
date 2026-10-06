@@ -512,7 +512,7 @@ foreach ($file in $files) {
     $index += [BitConverter]::GetBytes([uint32]$file.Data.Length) + [byte[]]@(0) + $nameBytes
     $data += $file.Data
 }
-$header = [Text.Encoding]::ASCII.GetBytes("PFH5") + [BitConverter]::GetBytes([uint32]3) + [BitConverter]::GetBytes([uint32]0) + [BitConverter]::GetBytes([uint32]0) + [BitConverter]::GetBytes([uint32]$files.Count) + [BitConverter]::GetBytes([uint32]$index.Length) + [BitConverter]::GetBytes([uint32]0x7FFFFFFF)
+$header = [Text.Encoding]::ASCII.GetBytes("PFH5") + [BitConverter]::GetBytes([uint32]3) + [BitConverter]::GetBytes([uint32]0) + [BitConverter]::GetBytes([uint32]0) + [BitConverter]::GetBytes([uint32]$files.Count) + [BitConverter]::GetBytes([uint32]$index.Length) + [BitConverter]::GetBytes([uint32][DateTimeOffset]::UtcNow.ToUnixTimeSeconds())
 $pack = $header + $index + $data
 [IO.File]::WriteAllBytes("$scratch\vc_morghasts.pack", $pack)
 Write-Host "pack built: $($pack.Length) bytes, $($files.Count) files"
