@@ -23,7 +23,13 @@ $EFF_ARCH = 'vc_morghasts_unit_cap_archai'
 # ========== 1. units_to_groupings_military_permissions (no version) ==========
 $permRows = @(
     @($HARB,'wh_main_group_vampire_counts'),
-    @($ARCH,'wh_main_group_vampire_counts')
+    @($ARCH,'wh_main_group_vampire_counts'),
+    # Vampire Coast: the main group plus Aranessa's Sartosa group (the Coast
+    # Terrorgheist and Scurvy Dogs are permitted in both)
+    @($HARB,'wh2_dlc11_group_vampire_coast'),
+    @($ARCH,'wh2_dlc11_group_vampire_coast'),
+    @($HARB,'wh2_dlc11_group_vampire_coast_sartosa'),
+    @($ARCH,'wh2_dlc11_group_vampire_coast_sartosa')
 )
 $perm = New-TableHeader $permRows.Count 0
 foreach ($r in $permRows) { $perm += New-CaString $r[0]; $perm += New-CaString $r[1] }
@@ -32,7 +38,14 @@ foreach ($r in $permRows) { $perm += New-CaString $r[0]; $perm += New-CaString $
 $bldRows = @(
     @('wh_main_vmp_forest_4',$HARB),
     @('wh_main_vmp_forest_5',$HARB),
-    @('wh_main_vmp_forest_5',$ARCH)
+    @('wh_main_vmp_forest_5',$ARCH),
+    # Vampire Coast: the two tier-5 buildings that recruit the Coast Terrorgheist
+    # (ship "Crow's Nest" and the settlement flying-monster chain); plain
+    # recruitment, no caps
+    @('wh2_dlc11_vampirecoast_ship_crows_nest_4',$HARB),
+    @('wh2_dlc11_vampirecoast_ship_crows_nest_4',$ARCH),
+    @('wh2_dlc11_vampirecoast_military_flying_4',$HARB),
+    @('wh2_dlc11_vampirecoast_military_flying_4',$ARCH)
 )
 $rand = New-Object Random 777123
 $bld = New-TableHeader $bldRows.Count 4
@@ -87,7 +100,15 @@ $setRows = @(
     @($ARCH,    'wh2_dlc11_vmp_vets_fell_bats_vargheists_terrorgheists_zombie_dragon'),
     @($ARCH_ROR,'wh2_dlc11_vmp_vets_fell_bats_vargheists_terrorgheists_ror'),
     @($HARB,    'wh3_dlc29_vmp_black_knights_blood_knights_drakenhof_templars'),
-    @($ARCH,    'wh3_dlc29_vmp_black_knights_blood_knights_drakenhof_templars')
+    @($ARCH,    'wh3_dlc29_vmp_black_knights_blood_knights_drakenhof_templars'),
+    # Vampire Coast lord skills:
+    #  wh2_dlc11_skill_cst_army_5  - melee attack / charge bonus effects use this
+    #  set (the skill's missile-damage effect uses the Deck Droppers set: untouched)
+    @($HARB,    'wh2_dlc11_cst_terrorgheist_scurvy_dogs_syreen'),
+    @($ARCH,    'wh2_dlc11_cst_terrorgheist_scurvy_dogs_syreen'),
+    #  wh2_dlc11_skill_cst_army_10 - leadership / speed / melee defence (rank 7+)
+    @($HARB,    'wh2_dlc11_cst_army_chain_set_monster'),
+    @($ARCH,    'wh2_dlc11_cst_army_chain_set_monster')
 )
 $setj = New-TableHeader $setRows.Count 1
 foreach ($r in $setRows) {

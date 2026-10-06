@@ -32,6 +32,14 @@ A new column in the VC military tech tree (right of the Vampire Army box), price
 [*]The flying-monsters lord skill (Fell Bats / Vargheists / Terrorgheists / Zombie Dragons, rank 7+)
 [/list]
 
+[h2]Vampire Coast[/h2]
+[list]
+[*]Both Morghast units recruitable from the two tier-5 buildings that recruit the Terrorgheist: the ship's Crow's Nest and the settlement Giant Feeding Cave
+[*]Ordinary recruitment: no unit caps, vanilla recruitment time and costs
+[*]Added to the Haunting Horror lord skill (melee attack / charge bonus lines) and to Masterly Splicing (leadership / speed / melee defence, rank 7+)
+[*]Works for Aranessa (Sartosa) too; no tech branch and no Raise Dead entries for the Coast
+[/list]
+
 [h2]Compatibility[/h2]
 [list]
 [*]Requires the Nagash DLC to see the units

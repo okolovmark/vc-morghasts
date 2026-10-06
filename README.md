@@ -44,6 +44,17 @@ exclusive to the Nagash (Undead Legions) campaign.
   removed, so the mounts are available in every campaign (vanilla level
   requirement kept)
 
+**Vampire Coast** gets the same two units, kept deliberately simple:
+
+* Recruitable from the two tier-5 buildings that recruit the Coast
+  Terrorgheist: the ship's *Crow's Nest* and the settlement *Giant Feeding
+  Cave*; ordinary recruitment (no unit caps, vanilla recruitment time)
+* Added to the unit sets of the Coast lord skills *Haunting Horror* (melee
+  attack / charge bonus lines; the missile-damage line stays Deck Droppers
+  only) and *Masterly Splicing* (leadership / speed / melee defence, rank 7+)
+* Aranessa's Sartosa military group included; no tech branch, no Raise Dead
+  entries for the Coast
+
 ![Tech branch](screenshots/tech_branch.png)
 ![Building recruitment](screenshots/building_recruitment.png)
 
@@ -62,10 +73,10 @@ PowerShell toolchain (see [tools/](tools/)):
 
 | Table | Rows | Purpose |
 |---|---|---|
-| `units_to_groupings_military_permissions` | 2 | allow the units for the `wh_main_group_vampire_counts` military group |
-| `building_units_allowed` | 3 | recruitment from Haunted Wood 4/5 |
+| `units_to_groupings_military_permissions` | 6 | allow the units for the Vampire Counts military group and the two Vampire Coast groups (main + Sartosa) |
+| `building_units_allowed` | 7 | recruitment from Haunted Wood 4/5 (VC) and Crow's Nest / Giant Feeding Cave tier 5 (Coast) |
 | `character_skill_nodes` | 2 (override) | clear the `wh3_dlc29_sc_nag_undead_legions` subculture gate on the two mount skill nodes |
-| `unit_set_to_unit_junctions` | 5 | add Morghasts to the knight / flying-monster skill unit sets |
+| `unit_set_to_unit_junctions` | 9 | add Morghasts to the VC knight / flying-monster skill unit sets and the Coast Haunting Horror / Masterly Splicing sets |
 | `effects` | 2 | cap-carrier effects (cloned from the TK Morghast cap effects) |
 | `unit_lists`, `unit_to_unit_list_junctions` | 2 + 2 | dedicated cap lists (`vc_morghasts_cap_*`), CA's own `wh3_unit_cap_*` pattern |
 | `unit_allowances` | 2 | the allowance definitions for the `vampire_counts` faction set |
