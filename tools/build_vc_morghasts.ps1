@@ -21,7 +21,10 @@ $EFF_HARB = 'vc_morghasts_unit_cap_harbingers'
 $EFF_ARCH = 'vc_morghasts_unit_cap_archai'
 # Vampire Coast: faction-wide "+N turns recruitment duration" for Morghasts,
 # carried by an effect bundle the script applies to every Coast faction
-$EFF_CST_TIME = 'vc_morghasts_cst_recruit_time'
+$EFF_CST_TIME = 'vc_morghasts_cst_recruit_time'          # province scope: local recruitment
+$EFF_CST_TIME_G = 'vc_morghasts_cst_recruit_time_global' # faction scope: the global pool
+# (two effects because effect_bundles_to_effects_junctions is keyed by
+#  bundle+effect: the same effect twice with different scopes voids the table)
 $BUNDLE_CST = 'vc_morghasts_cst_recruit_time'
 $CST_EXTRA_TURNS = 2.0   # Morghasts have create_time 1 -> 3 turns for the Coast (like its Terrorgheist)
 
@@ -130,7 +133,7 @@ if ($eb[$p] -eq 0xfc) { $p += 8 }
 $p += 1
 $cnt = [BitConverter]::ToUInt32($eb, $p); $p += 4
 $effSrc = @{ 'wh2_dlc09_effect_unit_cap_tmb_mon_morghast_harbingers' = $EFF_HARB; 'wh2_dlc09_effect_unit_cap_tmb_mon_morghast_archai' = $EFF_ARCH;
-             'wh2_dlc11_effect_faction_trait_unit_recruitment_duration_cst_depth_guard' = $EFF_CST_TIME }
+             'wh2_dlc11_effect_faction_trait_unit_recruitment_duration_cst_depth_guard' = @($EFF_CST_TIME, $EFF_CST_TIME_G) }
 $effRows = @()
 for ($r = 0; $r -lt $cnt; $r++) {
     $rowStart = $p
@@ -143,14 +146,14 @@ for ($r = 0; $r -lt $cnt; $r++) {
     $p+=1
     if ($effSrc.ContainsKey($key)) {
         $tail = $eb[$keyEnd..($p-1)]
-        $effRows += ,([byte[]](New-CaString $effSrc[$key]) + [byte[]]$tail)
+        foreach ($newKey in @($effSrc[$key])) { $effRows += ,([byte[]](New-CaString $newKey) + [byte[]]$tail) }
     }
 }
 if ($p -ne $eb.Length) { throw "effects reparse mismatch: $p/$($eb.Length)" }
-if ($effRows.Count -ne 3) { throw "effect rows not found: $($effRows.Count)" }
-$eff = New-TableHeader 3 0
+if ($effRows.Count -ne 4) { throw "effect rows not found: $($effRows.Count)" }
+$eff = New-TableHeader $effRows.Count 0
 foreach ($r in $effRows) { $eff += $r }
-Write-Host "effects cloned: 3"
+Write-Host "effects cloned: $($effRows.Count)"
 
 # ========== 5b. Vampire Coast recruitment-duration bundle ==========
 # effect_bonus_value_ids_unit_sets v0: [s bonus_value_id][s effect][s unit_set]
@@ -159,7 +162,9 @@ Write-Host "effects cloned: 3"
 #  wh3_dlc29_vmp_mon_morghast_* exist in vanilla
 $bvRows = @(
     @('recruit_time_mod', $EFF_CST_TIME, 'wh3_dlc29_vmp_mon_morghast_harbingers'),
-    @('recruit_time_mod', $EFF_CST_TIME, 'wh3_dlc29_vmp_mon_morghast_archai')
+    @('recruit_time_mod', $EFF_CST_TIME, 'wh3_dlc29_vmp_mon_morghast_archai'),
+    @('recruit_time_mod', $EFF_CST_TIME_G, 'wh3_dlc29_vmp_mon_morghast_harbingers'),
+    @('recruit_time_mod', $EFF_CST_TIME_G, 'wh3_dlc29_vmp_mon_morghast_archai')
 )
 $bvus = New-TableHeader $bvRows.Count 0
 foreach ($r in $bvRows) { $bvus += New-CaString $r[0]; $bvus += New-CaString $r[1]; $bvus += New-CaString $r[2] }
@@ -174,13 +179,13 @@ $ebund += [BitConverter]::GetBytes([int32]1); $ebund += New-CaString 'turns.png'
 # the province scope. Terrorgheist = 3 local / 6 global, so: province +2,
 # faction +4.
 $ebjRows = @(
-    @('faction_to_province_own_unseen', $CST_EXTRA_TURNS),
-    @('faction_to_faction_own_unseen',  2 * $CST_EXTRA_TURNS)
+    @($EFF_CST_TIME,   'faction_to_province_own_unseen', $CST_EXTRA_TURNS),
+    @($EFF_CST_TIME_G, 'faction_to_faction_own_unseen',  (2 * $CST_EXTRA_TURNS))   # parentheses: ',' binds tighter than '*'
 )
 $ebj = New-TableHeader $ebjRows.Count 3
 foreach ($r in $ebjRows) {
-    $ebj += New-CaString $BUNDLE_CST; $ebj += New-CaString $EFF_CST_TIME; $ebj += New-CaString $r[0]
-    $ebj += [BitConverter]::GetBytes([single]$r[1]); $ebj += New-CaString 'start_turn_completed'
+    $ebj += New-CaString $BUNDLE_CST; $ebj += New-CaString $r[0]; $ebj += New-CaString $r[1]
+    $ebj += [BitConverter]::GetBytes([single]$r[2]); $ebj += New-CaString 'start_turn_completed'
 }
 
 # ========== 6. VC unit caps = the ALLOWANCE system (owned-across-all-armies limit) ==========
@@ -434,6 +439,7 @@ $locRows = @(
     @("effects_description_$EFF_HARB", "Unit capacity: %+n`nMorghast Harbingers"),
     @("effects_description_$EFF_ARCH", "Unit capacity: %+n`nMorghast Archai"),
     @("effects_description_$EFF_CST_TIME", "Recruitment duration: %+n turns for Morghasts"),
+    @("effects_description_$EFF_CST_TIME_G", "Global recruitment duration: %+n turns for Morghasts"),
     @("technologies_onscreen_name_$T1", "Harbingers of the Accursed One"),
     @("technologies_short_description_$T1", "The Morghast Harbingers descend upon the Old World once more."),
     @("technologies_long_description_$T1", "In the Realm of Souls they were heralds of the Great Necromancer; now their blades serve the vampire courts."),

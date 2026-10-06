@@ -84,8 +84,8 @@ PowerShell toolchain (see [tools/](tools/)):
 | `building_units_allowed` | 7 | recruitment from Haunted Wood 4/5 (VC) and Crow's Nest / Giant Feeding Cave tier 5 (Coast) |
 | `character_skill_nodes` | 2 (override) | clear the `wh3_dlc29_sc_nag_undead_legions` subculture gate on the two mount skill nodes |
 | `unit_set_to_unit_junctions` | 9 | add Morghasts to the VC knight / flying-monster skill unit sets and the Coast Haunting Horror / Masterly Splicing sets |
-| `effects` | 3 | cap-carrier effects (cloned from the TK Morghast cap effects) + the Coast recruitment-duration effect (cloned from the Depth Guard faction-trait effect) |
-| `effect_bonus_value_ids_unit_sets`, `effect_bundles`, `effect_bundles_to_effects_junctions` | 2 + 1 + 2 | `recruit_time_mod` on the two Morghast unit sets, wrapped in a faction bundle the script applies to Vampire Coast factions: +2 in province scope (local recruitment) and +4 in faction scope (the global pool, whose base is twice the unit value) |
+| `effects` | 4 | cap-carrier effects (cloned from the TK Morghast cap effects) + the two Coast recruitment-duration effects (cloned from the Depth Guard faction-trait effect) |
+| `effect_bonus_value_ids_unit_sets`, `effect_bundles`, `effect_bundles_to_effects_junctions` | 4 + 1 + 2 | two `recruit_time_mod` effects on the two Morghast unit sets, wrapped in a faction bundle the script applies to Vampire Coast factions: one at +2 in province scope (local recruitment), one at +4 in faction scope (the global pool, whose base is twice the unit value); two effects because the bundle junction is keyed by bundle+effect |
 | `unit_lists`, `unit_to_unit_list_junctions` | 2 + 2 | dedicated cap lists (`vc_morghasts_cap_*`), CA's own `wh3_unit_cap_*` pattern |
 | `unit_allowances` | 2 | the allowance definitions for the `vampire_counts` faction set |
 | `effect_bonus_value_unit_list_junctions` | 2 | bind `unit_allowance_point_cap_mod` to the lists through the effects |
