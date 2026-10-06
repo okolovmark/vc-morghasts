@@ -415,8 +415,8 @@ $lua = @'
 -- into the pool after every Morghast hire - the unit-allowance cap
 -- (buildings + technologies) stays the only real limit.
 local MORGHASTS = {
-	["wh3_dlc29_vmp_mon_morghast_harbingers"] = { group = "vc_morghasts_grp_harbingers", max = 4 },
-	["wh3_dlc29_vmp_mon_morghast_archai"]     = { group = "vc_morghasts_grp_archai",     max = 2 },
+	["wh3_dlc29_vmp_mon_morghast_harbingers"] = { group = "vc_morghasts_grp_harbingers", max = 19 },
+	["wh3_dlc29_vmp_mon_morghast_archai"]     = { group = "vc_morghasts_grp_archai",     max = 19 },
 }
 local SRC = "wh3_dlc29_vmp_raise_dead_faction"
 local SUB = "wh_main_sc_vmp_vampire_counts"

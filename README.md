@@ -107,10 +107,10 @@ Requires the game installed (tables are read from `data/db.pack`) and any
 * The cap-effect tooltip line ("Unit capacity: +N") and the tech names are
   English-only — mod `.loc` files apply to all game languages.
 * In campaigns started before the mod was installed, the Raise Dead entries
-  are created by script with a pool stock cap of 4 Harbingers / 2 Archai per
-  batch (one unit is put back after every hire, so hiring one at a time is
-  unlimited). Campaigns created with the mod installed get unlimited stock —
-  the allowance cap is the only limit.
+  are created by script with a pool stock of 19 per unit (filled on load and
+  one unit put back after every hire, so batches of up to 19 and unlimited
+  sequential hiring). Campaigns created with the mod installed get unlimited
+  stock — the allowance cap is the only limit.
 
 ## Disclaimer
 
