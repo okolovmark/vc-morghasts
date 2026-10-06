@@ -19,6 +19,11 @@ $ARCH = 'wh3_dlc29_vmp_mon_morghast_archai'
 $ARCH_ROR = 'wh3_dlc29_vmp_mon_morghast_archai_ror'
 $EFF_HARB = 'vc_morghasts_unit_cap_harbingers'
 $EFF_ARCH = 'vc_morghasts_unit_cap_archai'
+# Vampire Coast: faction-wide "+N turns recruitment duration" for Morghasts,
+# carried by an effect bundle the script applies to every Coast faction
+$EFF_CST_TIME = 'vc_morghasts_cst_recruit_time'
+$BUNDLE_CST = 'vc_morghasts_cst_recruit_time'
+$CST_EXTRA_TURNS = 2.0   # Morghasts have create_time 1 -> 3 turns for the Coast (like its Terrorgheist)
 
 # ========== 1. units_to_groupings_military_permissions (no version) ==========
 $permRows = @(
@@ -124,7 +129,8 @@ if ($eb[0] -eq 0xfd) { $glen = [BitConverter]::ToUInt16($eb,4); $p = 6 + $glen*2
 if ($eb[$p] -eq 0xfc) { $p += 8 }
 $p += 1
 $cnt = [BitConverter]::ToUInt32($eb, $p); $p += 4
-$effSrc = @{ 'wh2_dlc09_effect_unit_cap_tmb_mon_morghast_harbingers' = $EFF_HARB; 'wh2_dlc09_effect_unit_cap_tmb_mon_morghast_archai' = $EFF_ARCH }
+$effSrc = @{ 'wh2_dlc09_effect_unit_cap_tmb_mon_morghast_harbingers' = $EFF_HARB; 'wh2_dlc09_effect_unit_cap_tmb_mon_morghast_archai' = $EFF_ARCH;
+             'wh2_dlc11_effect_faction_trait_unit_recruitment_duration_cst_depth_guard' = $EFF_CST_TIME }
 $effRows = @()
 for ($r = 0; $r -lt $cnt; $r++) {
     $rowStart = $p
@@ -141,10 +147,31 @@ for ($r = 0; $r -lt $cnt; $r++) {
     }
 }
 if ($p -ne $eb.Length) { throw "effects reparse mismatch: $p/$($eb.Length)" }
-if ($effRows.Count -ne 2) { throw "effect rows not found: $($effRows.Count)" }
-$eff = New-TableHeader 2 0
+if ($effRows.Count -ne 3) { throw "effect rows not found: $($effRows.Count)" }
+$eff = New-TableHeader 3 0
 foreach ($r in $effRows) { $eff += $r }
-Write-Host "effects cloned: 2"
+Write-Host "effects cloned: 3"
+
+# ========== 5b. Vampire Coast recruitment-duration bundle ==========
+# effect_bonus_value_ids_unit_sets v0: [s bonus_value_id][s effect][s unit_set]
+# (CA pattern: wh2_dlc11_effect_faction_trait_unit_recruitment_duration_cst_depth_guard
+#  -> recruit_time_mod -> wh2_dlc11_cst_depth_guard); the per-unit sets
+#  wh3_dlc29_vmp_mon_morghast_* exist in vanilla
+$bvRows = @(
+    @('recruit_time_mod', $EFF_CST_TIME, 'wh3_dlc29_vmp_mon_morghast_harbingers'),
+    @('recruit_time_mod', $EFF_CST_TIME, 'wh3_dlc29_vmp_mon_morghast_archai')
+)
+$bvus = New-TableHeader $bvRows.Count 0
+foreach ($r in $bvRows) { $bvus += New-CaString $r[0]; $bvus += New-CaString $r[1]; $bvus += New-CaString $r[2] }
+# effect_bundles v4: [s key][s desc][s title][s bundle_target][i32 priority][s ui_icon][b global][b 3d][b owner_only]
+$ebund = New-TableHeader 1 4
+$ebund += New-CaString $BUNDLE_CST; $ebund += New-CaString ''; $ebund += New-CaString ''; $ebund += New-CaString 'faction'
+# tail as in the vanilla faction-trait bundles: priority 1, is_global_effect 1, show_in_3d_space 0, owner_only 1
+$ebund += [BitConverter]::GetBytes([int32]1); $ebund += New-CaString 'turns.png'; $ebund += [byte[]]@(1,0,1)
+# effect_bundles_to_effects_junctions v3: [s bundle][s effect][s scope][f32 value][s advancement_stage]
+$ebj = New-TableHeader 1 3
+$ebj += New-CaString $BUNDLE_CST; $ebj += New-CaString $EFF_CST_TIME; $ebj += New-CaString 'faction_to_faction_own_unseen'
+$ebj += [BitConverter]::GetBytes([single]$CST_EXTRA_TURNS); $ebj += New-CaString 'start_turn_completed'
 
 # ========== 6. VC unit caps = the ALLOWANCE system (owned-across-all-armies limit) ==========
 # own cap unit-lists (CA pattern: dedicated wh3_unit_cap_* lists), because
@@ -396,6 +423,7 @@ function New-LocString([string]$s) {
 $locRows = @(
     @("effects_description_$EFF_HARB", "Unit capacity: %+n`nMorghast Harbingers"),
     @("effects_description_$EFF_ARCH", "Unit capacity: %+n`nMorghast Archai"),
+    @("effects_description_$EFF_CST_TIME", "Recruitment duration: %+n turns for Morghasts"),
     @("technologies_onscreen_name_$T1", "Harbingers of the Accursed One"),
     @("technologies_short_description_$T1", "The Morghast Harbingers descend upon the Old World once more."),
     @("technologies_long_description_$T1", "In the Realm of Souls they were heralds of the Great Necromancer; now their blades serve the vampire courts."),
@@ -441,6 +469,11 @@ local MORGHASTS = {
 }
 local SRC = "wh3_dlc29_vmp_raise_dead_faction"
 local SUB = "wh_main_sc_vmp_vampire_counts"
+-- Vampire Coast: a permanent faction bundle that adds recruitment turns to
+-- the Morghasts (their create_time is 1 - too quick for the Coast's plain
+-- building recruitment); applied once per faction, player and AI alike
+local CST_SUB = "wh2_dlc11_sc_cst_vampire_coast"
+local CST_BUNDLE = "vc_morghasts_cst_recruit_time"
 
 local function is_vc(faction)
 	return faction and not faction:is_null_interface() and faction:subculture() == SUB
@@ -451,6 +484,13 @@ cm:add_first_tick_callback(
 		local factions = cm:model():world():faction_list()
 		for i = 0, factions:num_items() - 1 do
 			local faction = factions:item_at(i)
+			if faction and not faction:is_null_interface() and faction:subculture() == CST_SUB then
+				pcall(function()
+					if not faction:has_effect_bundle(CST_BUNDLE) then
+						cm:apply_effect_bundle(CST_BUNDLE, faction:name(), 0)
+					end
+				end)
+			end
 			if is_vc(faction) then
 				for unit, m in pairs(MORGHASTS) do
 					pcall(function()
@@ -517,6 +557,9 @@ $files = @(
     @{ Path = "db\unit_recruitment_source_overrides_tables\!!!vc_morghasts"; Data = $ov },
     @{ Path = "db\resource_costs_tables\!!!vc_morghasts"; Data = $rc },
     @{ Path = "db\resource_cost_pooled_resource_junctions_tables\!!!vc_morghasts"; Data = $rcj },
+    @{ Path = "db\effect_bonus_value_ids_unit_sets_tables\!!!vc_morghasts"; Data = $bvus },
+    @{ Path = "db\effect_bundles_tables\!!!vc_morghasts"; Data = $ebund },
+    @{ Path = "db\effect_bundles_to_effects_junctions_tables\!!!vc_morghasts"; Data = $ebj },
     @{ Path = "text\db\!!!vc_morghasts.loc"; Data = $loc }
 )
 $previewPath = "C:\Users\okolo\Downloads\vc-morghasts\preview.png"
