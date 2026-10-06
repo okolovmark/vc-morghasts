@@ -169,9 +169,19 @@ $ebund += New-CaString $BUNDLE_CST; $ebund += New-CaString ''; $ebund += New-CaS
 # tail as in the vanilla faction-trait bundles: priority 1, is_global_effect 1, show_in_3d_space 0, owner_only 1
 $ebund += [BitConverter]::GetBytes([int32]1); $ebund += New-CaString 'turns.png'; $ebund += [byte[]]@(1,0,1)
 # effect_bundles_to_effects_junctions v3: [s bundle][s effect][s scope][f32 value][s advancement_stage]
-$ebj = New-TableHeader 1 3
-$ebj += New-CaString $BUNDLE_CST; $ebj += New-CaString $EFF_CST_TIME; $ebj += New-CaString 'faction_to_faction_own_unseen'
-$ebj += [BitConverter]::GetBytes([single]$CST_EXTRA_TURNS); $ebj += New-CaString 'start_turn_completed'
+# Observed in game: the faction scope only touches the GLOBAL pool (whose base
+# is 2x the unit's create_time: 2x1 + mod), local (province) recruitment needs
+# the province scope. Terrorgheist = 3 local / 6 global, so: province +2,
+# faction +4.
+$ebjRows = @(
+    @('faction_to_province_own_unseen', $CST_EXTRA_TURNS),
+    @('faction_to_faction_own_unseen',  2 * $CST_EXTRA_TURNS)
+)
+$ebj = New-TableHeader $ebjRows.Count 3
+foreach ($r in $ebjRows) {
+    $ebj += New-CaString $BUNDLE_CST; $ebj += New-CaString $EFF_CST_TIME; $ebj += New-CaString $r[0]
+    $ebj += [BitConverter]::GetBytes([single]$r[1]); $ebj += New-CaString 'start_turn_completed'
+}
 
 # ========== 6. VC unit caps = the ALLOWANCE system (owned-across-all-armies limit) ==========
 # own cap unit-lists (CA pattern: dedicated wh3_unit_cap_* lists), because
