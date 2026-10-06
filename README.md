@@ -121,3 +121,19 @@ convenience mod; unbalancing by design.
 
 [Unlimited Mercenaries](https://github.com/okolovmark/unlimited-mercenaries) —
 the sibling mod built with the same toolchain.
+
+## Publishing to the Steam Workshop
+
+The pack is uploaded with Runcher's `workshopper.exe` (tags must be passed as
+separate arguments: `--tags mod --tags campaign`). The classic CA launcher
+lists only Workshop items that carry the key-value tags `PACK_NAME` and
+`game_version` (the launcher's own uploader sets them; workshopper does not),
+so after the first upload run once:
+
+```bash
+powershell -File tools/workshop_set_launcher_tags.ps1 -Id 3814064730 -PackName vc_morghasts.pack
+```
+
+It talks to the running Steam client through the game's `steam_api64.dll`
+and only adds the two tags (no content re-upload). `tools/workshop_query.ps1`
+dumps the full UGC details of any items, including those tags, for checking.
