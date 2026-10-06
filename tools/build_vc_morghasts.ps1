@@ -149,6 +149,12 @@ foreach ($lst in @($LIST_HARB,$LIST_ARCH)) {
     $ua += New-CaString $lst
     $ua += [byte[]]@(1); $ua += New-CaString 'vampire_counts'
 }
+# unit_cap bindings (effect_bonus_value_unit_record_junctions v0: [bonus][effect][unit])
+# present in the last version where Raise Dead cards were visible
+$capRec = New-TableHeader 2 0
+$capRec += New-CaString 'unit_cap'; $capRec += New-CaString $EFF_HARB; $capRec += New-CaString $HARB
+$capRec += New-CaString 'unit_cap'; $capRec += New-CaString $EFF_ARCH; $capRec += New-CaString $ARCH
+
 # effect_bonus_value_unit_list_junctions v0: [s bonus_value_id][s unit_list][s effect]
 $capj = New-TableHeader 2 0
 $capj += New-CaString 'unit_allowance_point_cap_mod'; $capj += New-CaString $LIST_HARB; $capj += New-CaString $EFF_HARB
@@ -212,7 +218,7 @@ foreach ($r in $nodeRows) {
     $tnode += [BitConverter]::GetBytes([int32]$r[2])
     $tnode += [BitConverter]::GetBytes([int32]0)
     $tnode += [BitConverter]::GetBytes([int32]0)
-    $tnode += [byte[]]@(1); $tnode += New-CaString $UIG
+    $tnode += [byte[]]@(0)   # BISECT: no ui group
     if ($r[3]) { $tnode += [byte[]]@(1); $tnode += New-CaString $r[3] } else { $tnode += [byte[]]@(0) }
     $tnode += [BitConverter]::GetBytes([int32]0)
     $tnode += [BitConverter]::GetBytes([int32]120)
@@ -296,15 +302,17 @@ $grpRows = @(
     @('vc_morghasts_grp_harbingers',$HARB,8),
     @('vc_morghasts_grp_archai',$ARCH,9)
 )
+# tail copied byte-for-byte from vanilla rows: the schema-derived layout is
+# accepted by the db validator but the game then never creates the entries
 $mug = New-TableHeader $grpRows.Count 3
 foreach ($r in $grpRows) {
     $mug += [BitConverter]::GetBytes([single]1.0)
     $mug += New-CaString $r[0]
     $mug += [BitConverter]::GetBytes([int32]999999)
     $mug += New-CaString $r[1]
+    $mug += [BitConverter]::GetBytes([int32]-939524096)
+    $mug += [BitConverter]::GetBytes([int32](59000 + $r[2]))
     $mug += [byte[]]@(0)
-    $mug += [BitConverter]::GetBytes([single]100.0)
-    $mug += [BitConverter]::GetBytes([int32]$r[2])
 }
 
 # mercenary_pool_to_groups_junctions v3: [s group][i32 999999][i32 id][s pool][o][o sub][o]
@@ -382,41 +390,83 @@ $locRows = @(
 $loc = [byte[]]@(0xff,0xfe) + [Text.Encoding]::ASCII.GetBytes('LOC') + [byte[]]@(0) + [BitConverter]::GetBytes([uint32]1) + [BitConverter]::GetBytes([uint32]$locRows.Count)
 foreach ($r in $locRows) { $loc += New-LocString $r[0]; $loc += New-LocString $r[1]; $loc += [byte[]]@(1) }
 
+# ========== 7d. DIAG: always-on caps via difficulty handicap effects ==========
+$hRows = @()
+foreach ($diff in @(-1,0,1,2,3)) {
+    $hRows += ,@($diff, $EFF_HARB, 2.0)
+    $hRows += ,@($diff, $EFF_ARCH, 1.0)
+}
+$hand = New-TableHeader $hRows.Count 0
+foreach ($r in $hRows) {
+    $hand += [BitConverter]::GetBytes([int32]$r[0]) + [byte[]]@(0)
+    $hand += New-CaString $r[1]
+    $hand += New-CaString 'faction_to_faction_own_unseen'
+    $hand += [BitConverter]::GetBytes([single]$r[2]) + [byte[]]@(0)
+}
+
 # ========== 8b. Lua: inject raise-dead pool entries into existing saves ==========
 $lua = @'
--- vc_morghasts: morghast entries for the VC Raise Dead pool.
--- Pool state is snapshotted into savegames, so db rows alone only affect
--- new campaigns; this registers the entries on load for existing saves too.
--- Entries are keyed (unit, source) and immutable once created, so re-running
--- is harmless.
-local HARB = "wh3_dlc29_vmp_mon_morghast_harbingers"
-local ARCH = "wh3_dlc29_vmp_mon_morghast_archai"
+-- vc_morghasts: Morghast entries for the Vampire Counts Raise Dead pool.
+-- New campaigns get them from the db (unlimited stock); pool state is
+-- snapshotted into savegames, so for campaigns started before the mod was
+-- installed the entries are registered here on load. Entries are keyed
+-- (unit, source) and immutable once created, so re-running is harmless.
+-- Script-created entries carry a small stock cap, so one unit is put back
+-- into the pool after every Morghast hire - the unit-allowance cap
+-- (buildings + technologies) stays the only real limit.
+local MORGHASTS = {
+	["wh3_dlc29_vmp_mon_morghast_harbingers"] = { group = "vc_morghasts_grp_harbingers", max = 4 },
+	["wh3_dlc29_vmp_mon_morghast_archai"]     = { group = "vc_morghasts_grp_archai",     max = 2 },
+}
 local SRC = "wh3_dlc29_vmp_raise_dead_faction"
+local SUB = "wh_main_sc_vmp_vampire_counts"
+
+local function is_vc(faction)
+	return faction and not faction:is_null_interface() and faction:subculture() == SUB
+end
 
 cm:add_first_tick_callback(
 	function()
-		-- Stock is kept effectively unlimited; the real limit is the
-		-- unit-allowance cap (owned across all armies), granted by the
-		-- Haunted Wood buildings and the mod's technologies — the same
-		-- mechanic every other VC unit uses.
-		local function setup(faction)
-			if faction:is_null_interface() then return end
-			if faction:subculture() ~= "wh_main_sc_vmp_vampire_counts" then return end
-			pcall(function()
-				cm:add_unit_to_faction_mercenary_pool(
-					faction, HARB, SRC,
-					10, 100, 30, 2, "", "", "", true, "vc_morghasts_grp_harbingers")
-			end)
-			pcall(function()
-				cm:add_unit_to_faction_mercenary_pool(
-					faction, ARCH, SRC,
-					10, 100, 30, 2, "", "", "", true, "vc_morghasts_grp_archai")
-			end)
-		end
 		local factions = cm:model():world():faction_list()
 		for i = 0, factions:num_items() - 1 do
-			setup(factions:item_at(i))
+			local faction = factions:item_at(i)
+			if is_vc(faction) then
+				for unit, m in pairs(MORGHASTS) do
+					pcall(function()
+						cm:add_unit_to_faction_mercenary_pool(
+							faction, unit, SRC, 1, 100, m.max, 1, "", "", "", true, m.group)
+					end)
+				end
+				-- one-time fill of script-created entries up to their stock cap,
+				-- so several Morghasts can be raised in one batch
+				local flag = "vc_morghasts_filled_" .. faction:name()
+				if not cm:get_saved_value(flag) then
+					cm:set_saved_value(flag, true)
+					local cqi = faction:command_queue_index()
+					for unit, m in pairs(MORGHASTS) do
+						pcall(function() cm:add_units_to_faction_mercenary_pool(cqi, unit, m.max - 1) end)
+					end
+				end
+			end
 		end
+		core:add_listener(
+			"vc_morghasts_refill",
+			"UnitTrained",
+			function(context)
+				local ok, r = pcall(function()
+					local unit = context:unit()
+					return MORGHASTS[unit:unit_key()] ~= nil and is_vc(unit:faction())
+				end)
+				return ok and r
+			end,
+			function(context)
+				pcall(function()
+					local unit = context:unit()
+					cm:add_units_to_faction_mercenary_pool(unit:faction():command_queue_index(), unit:unit_key(), 1)
+				end)
+			end,
+			true
+		)
 	end
 )
 '@
@@ -450,6 +500,12 @@ $files = @(
 )
 $previewPath = "C:\Users\okolo\Downloads\vc-morghasts\preview.png"
 if (Test-Path $previewPath) { $files += @{ Path = "vc_morghasts.png"; Data = [IO.File]::ReadAllBytes($previewPath) } }
+## the technology_ui_groups pair caused memory-corruption crashes (guessed
+## corner-junction semantics) - permanently dropped, tech nodes render ungrouped
+$bisectDrop = @('technology_ui_groups')
+$files = $files | Where-Object { $path = $_.Path; -not ($bisectDrop | Where-Object { $path -match $_ }) }
+Write-Host "BISECT: $($files.Count) files kept"
+
 $index = @(); $data = @()
 foreach ($file in $files) {
     $nameBytes = [Text.Encoding]::ASCII.GetBytes($file.Path) + [byte]0

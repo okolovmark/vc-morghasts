@@ -1,8 +1,12 @@
 # Morghasts & Dread Abyssals for Vampire Counts
 
+[**Steam Workshop page**](https://steamcommunity.com/sharedfiles/filedetails/?id=3814064730)
+
 A Total War: Warhammer III mod that unlocks the Nagash DLC Morghasts and the
 Dread Abyssal mounts for the Vampire Counts race, instead of keeping them
 exclusive to the Nagash (Undead Legions) campaign.
+
+![Raise Dead](screenshots/raise_dead.png)
 
 **What it does:**
 
@@ -13,12 +17,14 @@ exclusive to the Nagash (Undead Legions) campaign.
   Terrorgheists live): Harbingers from tier 4, Archai from tier 5
 * Recruitable through **Raise Dead** (gravecall) as elite units priced like
   Blood Knights: 620 blood for Harbingers, 660 for Archai
-* Building-based unit caps, Tomb Kings style:
+* Unit caps through the native VC **unit-allowance** system — the same
+  owned-across-all-armies "x/y" limit every other Vampire Counts unit has:
   * Haunted Wood T4: 1 Harbinger
-  * Haunted Wood T5: 2 Harbingers + 1 Archai
-* **A new 3-tech branch** in the VC military tech tree (next to the ghost
-  column, priced like the Terrorgheist branch) that ports the Morghast buffs
-  from Nagash's Black Pyramid — everything except the gravecall unlocks:
+  * Haunted Wood T5: 2 Harbingers + 1 Archai (multiple provinces stack)
+* **A new 3-tech branch** in the VC military tech tree (right of the Vampire
+  Army box, priced like the Terrorgheist branch) that ports the Morghast
+  buffs from Nagash's Black Pyramid — everything except the gravecall
+  unlocks:
   * *Harbingers of the Accursed One*: +1 Harbinger cap; Harbingers get
     melee defence +7, bonus vs infantry +8, weapon strength +15%,
     ward save +15%, speed +15%, Vanguard Deployment
@@ -38,10 +44,13 @@ exclusive to the Nagash (Undead Legions) campaign.
   removed, so the mounts are available in every campaign (vanilla level
   requirement kept)
 
+![Tech branch](screenshots/tech_branch.png)
+![Building recruitment](screenshots/building_recruitment.png)
+
 Hire costs, upkeep and unit stats are untouched. Works in Immortal Empires
-and all campaigns; the Nagash campaign itself is unaffected (his own
-buildings are granted a high cap so his ritual-capacity system keeps
-working exactly as before).
+and all campaigns. The Nagash campaign is unaffected by construction: the
+allowance rows are scoped to the `vampire_counts` faction set, which his
+faction is not part of.
 
 Save-game compatible: add at any time. Removing mid-campaign is safe too —
 already-recruited Morghasts just become over-cap.
@@ -57,16 +66,32 @@ PowerShell toolchain (see [tools/](tools/)):
 | `building_units_allowed` | 3 | recruitment from Haunted Wood 4/5 |
 | `character_skill_nodes` | 2 (override) | clear the `wh3_dlc29_sc_nag_undead_legions` subculture gate on the two mount skill nodes |
 | `unit_set_to_unit_junctions` | 5 | add Morghasts to the knight / flying-monster skill unit sets |
-| `effects` | 2 | new unit-cap effects (cloned from the TK Morghast cap effects) |
-| `effect_bonus_value_unit_record_junctions` | 6 | bind `unit_cap` to the units; extend barrier/healing tech buffs to them |
-| `building_effects_junction` | 7 | caps from Haunted Wood (+ cap 30 from Nagash's own Necropolis buildings so his campaign is unchanged) |
-| `technology_effects_junction` | 2 | +1/+1 caps from the ghost-branch technologies |
-| `text/db/*.loc` | 2 | English tooltips for the cap effects |
+| `effects` | 2 | cap-carrier effects (cloned from the TK Morghast cap effects) |
+| `unit_lists`, `unit_to_unit_list_junctions` | 2 + 2 | dedicated cap lists (`vc_morghasts_cap_*`), CA's own `wh3_unit_cap_*` pattern |
+| `unit_allowances` | 2 | the allowance definitions for the `vampire_counts` faction set |
+| `effect_bonus_value_unit_list_junctions` | 2 | bind `unit_allowance_point_cap_mod` to the lists through the effects |
+| `building_effects_junction` | 3 | caps from Haunted Wood 4/5 |
+| `technology_effects_junction` | 17 | the three techs' effects (+ the +1/+1 caps) |
+| `technologies`, `technology_nodes`, `technology_node_links`, `technology_ui_tabs_…` | 3 + 3 + 2 + 3 | the tech branch |
+| `mercenary_unit_groups`, `mercenary_pool_to_groups_junctions` | 2 + 2 | Raise Dead pool entries (`wh3_dlc29_vmp_raise_dead_faction`) |
+| `unit_recruitment_source_overrides`, `resource_costs`, `resource_cost_pooled_resource_junctions` | 2 + 2 + 2 | blood price for the pool |
+| `text/db/*.loc` | 13 | English tooltips for the cap effects and the techs |
+| `script/campaign/mod/vc_morghasts.lua` | — | registers the pool entries in campaigns created before the mod was added, and tops up pool stock every turn |
 
 The binary table layouts were reverse-engineered by brute-forcing token
-grammars against the live db with exact-EOF validation
-(`tools/build_vc_morghasts.ps1` writes every row byte-by-byte; skill-node
-and effect rows are raw-cloned from vanilla with targeted field edits).
+grammars against the live db with exact-EOF validation, then cross-checked
+against the RPFM schema; a few hard-won findings (all documented in the
+build script):
+
+* `effect_bonus_value_unit_list_junctions` is `[bonus_value_id][unit_list][effect]`
+  — a periodic stream round-trips under the wrong column order too, and the
+  game then reads the list key as a bonus id ("invalid database record")
+* `mercenary_unit_groups` must be written with the exact vanilla byte tail;
+  the schema-derived layout passes the db validator but the game silently
+  never creates the pool entries
+* `technology_ui_groups` + its node junction (a custom box in the tech
+  tree) corrupted memory at campaign start — the branch therefore renders
+  ungrouped, next to the Vampire Army box
 
 ## Build from source
 
@@ -79,10 +104,13 @@ Requires the game installed (tables are read from `data/db.pack`) and any
 
 ## Known quirks
 
-* The cap-effect tooltip line ("Unit capacity: +N") is English-only — mod
-  `.loc` files apply to all game languages.
-* In the Nagash campaign Morghast recruitment may additionally show a
-  "x/30" unit-cap badge next to the ritual capacity — cosmetic.
+* The cap-effect tooltip line ("Unit capacity: +N") and the tech names are
+  English-only — mod `.loc` files apply to all game languages.
+* In campaigns started before the mod was installed, the Raise Dead entries
+  are created by script with a pool stock cap of 4 Harbingers / 2 Archai per
+  batch (one unit is put back after every hire, so hiring one at a time is
+  unlimited). Campaigns created with the mod installed get unlimited stock —
+  the allowance cap is the only limit.
 
 ## Disclaimer
 

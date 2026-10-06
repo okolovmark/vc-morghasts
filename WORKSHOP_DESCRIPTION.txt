@@ -7,12 +7,12 @@ Unlocks the Nagash DLC Morghasts and the Dread Abyssal mounts for the whole Vamp
 [*][b]Morghast Harbingers[/b] — recruitable from the Haunted Wood chain, tier 4+
 [*][b]Morghast Archai[/b] — recruitable from the Haunted Wood chain, tier 5
 [*]Also available through [b]Raise Dead[/b], priced like Blood Knights: 620 blood (Harbingers) / 660 blood (Archai)
-[*]Building-based unit caps (Tomb Kings style): T4 gives 1 Harbinger, T5 gives 2 Harbingers + 1 Archai; multiple provinces stack
+[*]Native VC unit caps (the "x/y" owned-across-all-armies limit): Haunted Wood T4 gives 1 Harbinger, T5 gives 2 Harbingers + 1 Archai; multiple provinces stack
 [*]Vanilla hire costs, upkeep and stats
 [/list]
 
 [h2]A new 3-tech branch (Black Pyramid buffs)[/h2]
-A new column in the VC military tech tree, priced like the Terrorgheist branch, porting the Morghast buffs from Nagash's Black Pyramid (everything except the gravecall unlocks):
+A new column in the VC military tech tree (right of the Vampire Army box), priced like the Terrorgheist branch, porting the Morghast buffs from Nagash's Black Pyramid (everything except the gravecall unlocks):
 [list]
 [*][b]Harbingers of the Accursed One[/b]: +1 Harbinger cap; melee defence +7, bonus vs infantry +8, weapon strength +15%, ward save +15%, speed +15%, Vanguard Deployment
 [*][b]Archai of the Great Necromancer[/b]: +1 Archai cap; armour +25, bonus vs large +8, weapon strength +15%, leadership +15, melee attack +10, ward save +10%
@@ -26,7 +26,7 @@ A new column in the VC military tech tree, priced like the Terrorgheist branch, 
 [*]The mount skill nodes are CA's own — the mod only removes the "Nagash campaign only" gate; level requirements stay vanilla
 [/list]
 
-[h2]Skill & tech buffs extended to Morghasts[/h2]
+[h2]Skill buffs extended to Morghasts[/h2]
 [list]
 [*]Raising the Dead (Black Knights / Blood Knights / Drakenhof Templars lord skill)
 [*]The flying-monsters lord skill (Fell Bats / Vargheists / Terrorgheists / Zombie Dragons, rank 7+)
@@ -35,9 +35,9 @@ A new column in the VC military tech tree, priced like the Terrorgheist branch, 
 [h2]Compatibility[/h2]
 [list]
 [*]Requires the Nagash DLC to see the units
-[*]Save-game compatible: add or remove at any time
+[*]Save-game compatible: add or remove at any time. In campaigns started before installing the mod, the Raise Dead entries are added by script on load
 [*]Immortal Empires and all campaigns; the Nagash campaign itself is unaffected
-[*]The cap tooltip line is English-only in all game languages
+[*]The cap tooltip line and the tech names are English-only in all game languages
 [/list]
 
 [h2]Bug reports & source code[/h2]
