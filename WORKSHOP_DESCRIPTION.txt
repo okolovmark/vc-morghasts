@@ -40,8 +40,16 @@ A new column in the VC military tech tree (right of the Vampire Army box), price
 [*]Works for Aranessa (Sartosa) too; no tech branch and no Raise Dead entries for the Coast
 [/list]
 
+[h2]Tomb Kings[/h2]
+[list]
+[*]Both Morghast units recruitable from the tier-5 Restored Hierotitan Statue, which also gives the caps: +2 Harbingers / +1 Archai per statue (native unit caps, like the Hierotitan itself)
+[*]3 turns to recruit locally, 6 globally; vanilla costs
+[*]Added to the Sacred Stones lord skill (melee attack / melee defence lines) and to Ancient Stone (leadership / weapon strength / spell resistance, rank 7+)
+[*]Works for Arkhan too; no tech branch
+[/list]
+
 [h2]AI factions[/h2]
-Everything above applies to the AI as well: AI Vampire Counts and Vampire Coast factions recruit Morghasts from the same buildings (with the same caps and techs on the Counts side, the same recruitment time on the Coast side), and AI Vampire Counts factions get the Raise Dead entries too.
+Everything above applies to the AI as well: AI Vampire Counts, Vampire Coast and Tomb Kings factions recruit Morghasts from the same buildings (with the same caps, techs and recruitment times), and AI Vampire Counts factions get the Raise Dead entries too.
 
 [h2]Compatibility[/h2]
 [list]

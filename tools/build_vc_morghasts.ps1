@@ -38,7 +38,12 @@ $permRows = @(
     @($HARB,'wh2_dlc11_group_vampire_coast'),
     @($ARCH,'wh2_dlc11_group_vampire_coast'),
     @($HARB,'wh2_dlc11_group_vampire_coast_sartosa'),
-    @($ARCH,'wh2_dlc11_group_vampire_coast_sartosa')
+    @($ARCH,'wh2_dlc11_group_vampire_coast_sartosa'),
+    # Tomb Kings: main group plus Arkhan's (the Hierotitan is permitted in both)
+    @($HARB,'wh2_dlc09_tomb_kings'),
+    @($ARCH,'wh2_dlc09_tomb_kings'),
+    @($HARB,'wh2_dlc09_tomb_kings_arkhan'),
+    @($ARCH,'wh2_dlc09_tomb_kings_arkhan')
 )
 $perm = New-TableHeader $permRows.Count 0
 foreach ($r in $permRows) { $perm += New-CaString $r[0]; $perm += New-CaString $r[1] }
@@ -54,7 +59,10 @@ $bldRows = @(
     @('wh2_dlc11_vampirecoast_ship_crows_nest_4',$HARB),
     @('wh2_dlc11_vampirecoast_ship_crows_nest_4',$ARCH),
     @('wh2_dlc11_vampirecoast_military_flying_4',$HARB),
-    @('wh2_dlc11_vampirecoast_military_flying_4',$ARCH)
+    @('wh2_dlc11_vampirecoast_military_flying_4',$ARCH),
+    # Tomb Kings: the tier-5 Hierotitan statue (chain _0/_1/_2 = III/IV/V)
+    @('wh2_dlc09_tmb_hierotitan_2',$HARB),
+    @('wh2_dlc09_tmb_hierotitan_2',$ARCH)
 )
 $rand = New-Object Random 777123
 $bld = New-TableHeader $bldRows.Count 4
@@ -117,7 +125,11 @@ $setRows = @(
     @($ARCH,    'wh2_dlc11_cst_terrorgheist_scurvy_dogs_syreen'),
     #  wh2_dlc11_skill_cst_army_10 - leadership / speed / melee defence (rank 7+)
     @($HARB,    'wh2_dlc11_cst_army_chain_set_monster'),
-    @($ARCH,    'wh2_dlc11_cst_army_chain_set_monster')
+    @($ARCH,    'wh2_dlc11_cst_army_chain_set_monster'),
+    # Tomb Kings lord skill wh2_dlc09_skill_tmb_army_buff_vet_structure
+    # ("Ancient Stone"): leadership / weapon strength / spell resistance, rank 7+
+    @($HARB,    'wh2_dlc09_tmb_all_monster_rank7'),
+    @($ARCH,    'wh2_dlc09_tmb_all_monster_rank7')
 )
 $setj = New-TableHeader $setRows.Count 1
 foreach ($r in $setRows) {
@@ -167,31 +179,45 @@ $bvRows = @(
     @('recruit_time_mod', $EFF_CST_TIME_G, 'wh3_dlc29_vmp_mon_morghast_harbingers'),
     @('recruit_time_mod', $EFF_CST_TIME_G, 'wh3_dlc29_vmp_mon_morghast_archai'),
     @('recruit_time_mod', $EFF_CST_TIME_F, 'wh3_dlc29_vmp_mon_morghast_harbingers'),
-    @('recruit_time_mod', $EFF_CST_TIME_F, 'wh3_dlc29_vmp_mon_morghast_archai')
+    @('recruit_time_mod', $EFF_CST_TIME_F, 'wh3_dlc29_vmp_mon_morghast_archai'),
+    # Tomb Kings lord skill wh2_dlc09_skill_tmb_army_buff_structure_infantry
+    # ("Sacred Stones"): its melee lines bind to per-unit sets (Hierotitan +
+    # the Ushabti set), so the Morghast per-unit sets are added the same way;
+    # the missile-damage line (Ushabti only) is left alone
+    @('melee_attack_mod',  'wh2_dlc09_effect_force_stat_melee_attack_ushabti_titan',      'wh3_dlc29_vmp_mon_morghast_harbingers'),
+    @('melee_attack_mod',  'wh2_dlc09_effect_force_stat_melee_attack_ushabti_titan',      'wh3_dlc29_vmp_mon_morghast_archai'),
+    @('melee_defence_mod', 'wh2_dlc09_effect_force_stat_melee_defence_tmb_ushabti_titan', 'wh3_dlc29_vmp_mon_morghast_harbingers'),
+    @('melee_defence_mod', 'wh2_dlc09_effect_force_stat_melee_defence_tmb_ushabti_titan', 'wh3_dlc29_vmp_mon_morghast_archai')
 )
 $bvus = New-TableHeader $bvRows.Count 0
 foreach ($r in $bvRows) { $bvus += New-CaString $r[0]; $bvus += New-CaString $r[1]; $bvus += New-CaString $r[2] }
 # effect_bundles v4: [s key][s desc][s title][s bundle_target][i32 priority][s ui_icon][b global][b 3d][b owner_only]
-$ebund = New-TableHeader 1 4
-$ebund += New-CaString $BUNDLE_CST; $ebund += New-CaString ''; $ebund += New-CaString ''; $ebund += New-CaString 'faction'
-# tail as in the vanilla faction-trait bundles: priority 1, is_global_effect 1, show_in_3d_space 0, owner_only 1
-$ebund += [BitConverter]::GetBytes([int32]1); $ebund += New-CaString 'turns.png'; $ebund += [byte[]]@(1,0,1)
+$BUNDLE_TMB = 'vc_morghasts_tmb_recruit_time'   # Tomb Kings: same idea, settlement recruitment
+$ebund = New-TableHeader 2 4
+foreach ($bk in @($BUNDLE_CST, $BUNDLE_TMB)) {
+    $ebund += New-CaString $bk; $ebund += New-CaString ''; $ebund += New-CaString ''; $ebund += New-CaString 'faction'
+    # tail as in the vanilla faction-trait bundles: priority 1, is_global_effect 1, show_in_3d_space 0, owner_only 1
+    $ebund += [BitConverter]::GetBytes([int32]1); $ebund += New-CaString 'turns.png'; $ebund += [byte[]]@(1,0,1)
+}
 # effect_bundles_to_effects_junctions v3: [s bundle][s effect][s scope][f32 value][s advancement_stage]
 # Observed in game: the faction scope only touches the GLOBAL pool (whose base
 # is 2x the unit's create_time: 2x1 + mod), local (province) recruitment needs
 # the province scope. Terrorgheist = 3 local / 6 global, so: province +2,
 # faction +4.
 $ebjRows = @(
-    @($EFF_CST_TIME,   'faction_to_province_own_unseen', $CST_EXTRA_TURNS),
-    @($EFF_CST_TIME_G, 'faction_to_faction_own_unseen',  (2 * $CST_EXTRA_TURNS)),  # parentheses: ',' binds tighter than '*'
+    @($BUNDLE_CST, $EFF_CST_TIME,   'faction_to_province_own_unseen', $CST_EXTRA_TURNS),
+    @($BUNDLE_CST, $EFF_CST_TIME_G, 'faction_to_faction_own_unseen',  (2 * $CST_EXTRA_TURNS)),  # parentheses: ',' binds tighter than '*'
     # observed: the Coast ship pool (recruitment belongs to the army, like a
     # horde) ignores faction and province scopes - it needs the force scope
-    @($EFF_CST_TIME_F, 'faction_to_force_own_unseen',    $CST_EXTRA_TURNS)
+    @($BUNDLE_CST, $EFF_CST_TIME_F, 'faction_to_force_own_unseen',    $CST_EXTRA_TURNS),
+    # Tomb Kings recruit from settlements: province + global
+    @($BUNDLE_TMB, $EFF_CST_TIME,   'faction_to_province_own_unseen', $CST_EXTRA_TURNS),
+    @($BUNDLE_TMB, $EFF_CST_TIME_G, 'faction_to_faction_own_unseen',  (2 * $CST_EXTRA_TURNS))
 )
 $ebj = New-TableHeader $ebjRows.Count 3
 foreach ($r in $ebjRows) {
-    $ebj += New-CaString $BUNDLE_CST; $ebj += New-CaString $r[0]; $ebj += New-CaString $r[1]
-    $ebj += [BitConverter]::GetBytes([single]$r[2]); $ebj += New-CaString 'start_turn_completed'
+    $ebj += New-CaString $r[0]; $ebj += New-CaString $r[1]; $ebj += New-CaString $r[2]
+    $ebj += [BitConverter]::GetBytes([single]$r[3]); $ebj += New-CaString 'start_turn_completed'
 }
 
 # ========== 6. VC unit caps = the ALLOWANCE system (owned-across-all-armies limit) ==========
@@ -201,22 +227,32 @@ foreach ($r in $ebjRows) {
 $LIST_HARB = 'vc_morghasts_cap_harbingers'
 $LIST_ARCH = 'vc_morghasts_cap_archai'
 
+# Tomb Kings: their own pair of lists, scoped to the vanilla faction set
+# faction_set_culture_tomb_kings (the TK unit lists have no allowance rows at
+# all in vanilla; a scoped row keeps Nagash and everyone else untouched)
+$LIST_HARB_TMB = 'vc_morghasts_tmb_cap_harbingers'
+$LIST_ARCH_TMB = 'vc_morghasts_tmb_cap_archai'
+$capLists = @(
+    @($LIST_HARB, $HARB, 'vampire_counts', $EFF_HARB),
+    @($LIST_ARCH, $ARCH, 'vampire_counts', $EFF_ARCH),
+    @($LIST_HARB_TMB, $HARB, 'faction_set_culture_tomb_kings', $EFF_HARB),
+    @($LIST_ARCH_TMB, $ARCH, 'faction_set_culture_tomb_kings', $EFF_ARCH)
+)
+
 # unit_lists v0: [s key]
-$ul = New-TableHeader 2 0
-$ul += New-CaString $LIST_ARCH
-$ul += New-CaString $LIST_HARB
+$ul = New-TableHeader $capLists.Count 0
+foreach ($r in $capLists) { $ul += New-CaString $r[0] }
 
 # unit_to_unit_list_junctions v0: [s unit][s list]
-$ulj = New-TableHeader 2 0
-$ulj += New-CaString $HARB; $ulj += New-CaString $LIST_HARB
-$ulj += New-CaString $ARCH; $ulj += New-CaString $LIST_ARCH
+$ulj = New-TableHeader $capLists.Count 0
+foreach ($r in $capLists) { $ulj += New-CaString $r[1]; $ulj += New-CaString $r[0] }
 
-# unit_allowances v1: [i32 base][s unit_list][o campaign_group]
-$ua = New-TableHeader 2 1
-foreach ($lst in @($LIST_HARB,$LIST_ARCH)) {
+# unit_allowances v1: [i32 base][s unit_list][o faction_set]
+$ua = New-TableHeader $capLists.Count 1
+foreach ($r in $capLists) {
     $ua += [BitConverter]::GetBytes([int32]0)
-    $ua += New-CaString $lst
-    $ua += [byte[]]@(1); $ua += New-CaString 'vampire_counts'
+    $ua += New-CaString $r[0]
+    $ua += [byte[]]@(1); $ua += New-CaString $r[2]
 }
 # unit_cap bindings (effect_bonus_value_unit_record_junctions v0: [bonus][effect][unit])
 # present in the last version where Raise Dead cards were visible
@@ -225,21 +261,26 @@ $capRec += New-CaString 'unit_cap'; $capRec += New-CaString $EFF_HARB; $capRec +
 $capRec += New-CaString 'unit_cap'; $capRec += New-CaString $EFF_ARCH; $capRec += New-CaString $ARCH
 
 # effect_bonus_value_unit_list_junctions v0: [s bonus_value_id][s unit_list][s effect]
-$capj = New-TableHeader 2 0
-$capj += New-CaString 'unit_allowance_point_cap_mod'; $capj += New-CaString $LIST_HARB; $capj += New-CaString $EFF_HARB
-$capj += New-CaString 'unit_allowance_point_cap_mod'; $capj += New-CaString $LIST_ARCH; $capj += New-CaString $EFF_ARCH
+# the same two cap effects drive both the VC and the TK lists: each list is
+# scoped to its own faction set, so a VC building never touches a TK cap
+$capj = New-TableHeader $capLists.Count 0
+foreach ($r in $capLists) { $capj += New-CaString 'unit_allowance_point_cap_mod'; $capj += New-CaString $r[0]; $capj += New-CaString $r[3] }
 
 # ========== 7. building_effects_junction (no version): [bld][eff][scope][f32][f32][i32 0][s ""] ==========
 $beRows = @(
-    @('wh_main_vmp_forest_4', $EFF_HARB, 1.0),
-    @('wh_main_vmp_forest_5', $EFF_HARB, 2.0),
-    @('wh_main_vmp_forest_5', $EFF_ARCH, 1.0)
+    @('wh_main_vmp_forest_4', $EFF_HARB, 1.0, 'faction_to_faction_own_unseen'),
+    @('wh_main_vmp_forest_5', $EFF_HARB, 2.0, 'faction_to_faction_own_unseen'),
+    @('wh_main_vmp_forest_5', $EFF_ARCH, 1.0, 'faction_to_faction_own_unseen'),
+    # Tomb Kings: the Hierotitan statue, visible in its tooltip like the vanilla
+    # "Unit capacity: +1 Hierotitan" row (scope building_to_faction_own)
+    @('wh2_dlc09_tmb_hierotitan_2', $EFF_HARB, 2.0, 'building_to_faction_own'),
+    @('wh2_dlc09_tmb_hierotitan_2', $EFF_ARCH, 1.0, 'building_to_faction_own')
 )
 $be = New-TableHeader $beRows.Count 0
 foreach ($r in $beRows) {
     $be += New-CaString $r[0]
     $be += New-CaString $r[1]
-    $be += New-CaString 'faction_to_faction_own_unseen'
+    $be += New-CaString $r[3]
     $be += [BitConverter]::GetBytes([single]$r[2])
     $be += [BitConverter]::GetBytes([single]$r[2])
     $be += [BitConverter]::GetBytes([int32]0)
@@ -495,8 +536,10 @@ local SUB = "wh_main_sc_vmp_vampire_counts"
 -- Vampire Coast: a permanent faction bundle that adds recruitment turns to
 -- the Morghasts (their create_time is 1 - too quick for the Coast's plain
 -- building recruitment); applied once per faction, player and AI alike
-local CST_SUB = "wh2_dlc11_sc_cst_vampire_coast"
-local CST_BUNDLE = "vc_morghasts_cst_recruit_time"
+local TIME_BUNDLES = {
+	["wh2_dlc11_sc_cst_vampire_coast"] = "vc_morghasts_cst_recruit_time",
+	["wh2_dlc09_sc_tmb_tomb_kings"]    = "vc_morghasts_tmb_recruit_time",
+}
 
 local function is_vc(faction)
 	return faction and not faction:is_null_interface() and faction:subculture() == SUB
@@ -507,10 +550,11 @@ cm:add_first_tick_callback(
 		local factions = cm:model():world():faction_list()
 		for i = 0, factions:num_items() - 1 do
 			local faction = factions:item_at(i)
-			if faction and not faction:is_null_interface() and faction:subculture() == CST_SUB then
+			local bundle = faction and not faction:is_null_interface() and TIME_BUNDLES[faction:subculture()]
+			if bundle then
 				pcall(function()
-					if not faction:has_effect_bundle(CST_BUNDLE) then
-						cm:apply_effect_bundle(CST_BUNDLE, faction:name(), 0)
+					if not faction:has_effect_bundle(bundle) then
+						cm:apply_effect_bundle(bundle, faction:name(), 0)
 					end
 				end)
 			end

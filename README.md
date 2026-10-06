@@ -59,14 +59,27 @@ exclusive to the Nagash (Undead Legions) campaign.
 * Aranessa's Sartosa military group included; no tech branch, no Raise Dead
   entries for the Coast
 
+**Tomb Kings** get them too:
+
+* Recruitable from the tier-5 *Restored Hierotitan Statue* (the Hierotitan
+  building), which also raises the caps: +2 Harbingers / +1 Archai per
+  statue, through the same unit-allowance system (own lists scoped to the
+  vanilla `faction_set_culture_tomb_kings` set, so nobody else is affected)
+* Recruitment takes 3 turns locally / 6 globally, the same scripted
+  faction bundle as the Coast (province + faction scopes)
+* Added to the lord skills *Sacred Stones* (melee attack / melee defence
+  lines; the Ushabti missile-damage line stays as is) and *Ancient Stone*
+  (leadership / weapon strength / spell resistance, rank 7+)
+* Arkhan's military group included; no tech branch
+
 ![Vampire Coast ship building](screenshots/vampire_coast_ship.png)
 ![Vampire Coast recruitment](screenshots/vampire_coast_recruitment.png)
 
 ![Tech branch](screenshots/tech_branch.png)
 ![Building recruitment](screenshots/building_recruitment.png)
 
-Everything applies to AI factions as well: AI Vampire Counts and Vampire
-Coast factions recruit Morghasts from the same buildings under the same
+Everything applies to AI factions as well: AI Vampire Counts, Vampire Coast and Tomb Kings
+factions recruit Morghasts from the same buildings under the same
 rules, and the Raise Dead entries are registered for every Vampire Counts
 faction.
 
