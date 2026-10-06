@@ -65,6 +65,11 @@ exclusive to the Nagash (Undead Legions) campaign.
 ![Tech branch](screenshots/tech_branch.png)
 ![Building recruitment](screenshots/building_recruitment.png)
 
+Everything applies to AI factions as well: AI Vampire Counts and Vampire
+Coast factions recruit Morghasts from the same buildings under the same
+rules, and the Raise Dead entries are registered for every Vampire Counts
+faction.
+
 Hire costs, upkeep and unit stats are untouched. Works in Immortal Empires
 and all campaigns. The Nagash campaign is unaffected by construction: the
 allowance rows are scoped to the `vampire_counts` faction set, which his
